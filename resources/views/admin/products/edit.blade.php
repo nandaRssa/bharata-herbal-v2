@@ -71,7 +71,7 @@
                         class="w-5 h-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
                     <label for="is_discount_active" class="text-sm font-bold text-slate-600">Aktifkan Diskon</label>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5" :class="discountEnabled ? '' : 'opacity-40 pointer-events-none'">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5" :class="discountEnabled ? '' : 'opacity-20 pointer-events-none'">
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Tipe Diskon</label>
                         <select name="discount_type" :disabled="!discountEnabled" class="w-full border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/10 focus:border-emerald-600/30 text-slate-700 font-medium transition duration-200">
