@@ -79,11 +79,12 @@
                             <option value="fixed" {{ old('discount_type', $product->discount_type) == 'fixed' ? 'selected' : '' }}>Nominal (Rp)</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Nilai Diskon</label>
-                        <input type="number" name="discount_value" value="{{ old('discount_value', $product->discount_value) }}" min="0"
-                            class="w-full border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/10 focus:border-emerald-600/30 text-slate-700 font-bold transition duration-200">
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Nilai Diskon</label>
+                    <input type="number" name="discount_value" value="{{ old('discount_value', $product->discount_value) }}" min="0"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/10 focus:border-emerald-600/30 text-slate-700 font-bold transition duration-200">
+                    <p id="discount-warning" class="mt-1.5 text-xs font-bold hidden">⚠️ <span id="discount-warning-text"></span></p>
+                </div>
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Mulai</label>
                         <input type="datetime-local" name="discount_start_at" value="{{ old('discount_start_at', $product->discount_start_at ? $product->discount_start_at->format('Y-m-d\TH:i') : '') }}"
@@ -105,13 +106,25 @@
             var typeEl = document.querySelector('[name="discount_type"]');
             var valEl = document.querySelector('[name="discount_value"]');
             var priceEl = document.querySelector('[name="price"]');
+            var warnEl = document.getElementById('discount-warning');
+            var warnText = document.getElementById('discount-warning-text');
+            function formatRp(n) { return 'Rp ' + parseInt(n).toLocaleString('id-ID'); }
             function validateDiscount() {
-                if (!typeEl || !valEl || !valEl.value) return;
+                if (!typeEl || !valEl || !valEl.value) { if(warnEl) warnEl.classList.add('hidden'); return; }
                 var val = parseInt(valEl.value);
                 var price = parseInt(priceEl ? priceEl.value : 0);
-                if (typeEl.value === 'percentage' && val > 100) { valEl.setCustomValidity('Diskon persen tidak boleh melebihi 100%.'); }
-                else if (typeEl.value === 'fixed' && val > price) { valEl.setCustomValidity('Diskon nominal tidak boleh melebihi harga asli produk.'); }
-                else { valEl.setCustomValidity(''); }
+                if (typeEl.value === 'percentage' && val > 100) {
+                    valEl.setCustomValidity('Diskon persen tidak boleh melebihi 100%.');
+                    if(warnEl) { warnEl.classList.remove('hidden'); warnEl.className = 'mt-1.5 text-xs font-bold text-rose-600'; warnText.textContent = 'Diskon persen tidak boleh melebihi 100%'; }
+                }
+                else if (typeEl.value === 'fixed' && val > price) {
+                    valEl.setCustomValidity('Diskon nominal tidak boleh melebihi harga asli produk.');
+                    if(warnEl) { warnEl.classList.remove('hidden'); warnEl.className = 'mt-1.5 text-xs font-bold text-rose-600'; warnText.textContent = 'Diskon nominal tidak boleh melebihi ' + formatRp(price); }
+                }
+                else {
+                    valEl.setCustomValidity('');
+                    if(warnEl) warnEl.classList.add('hidden');
+                }
             }
             if (typeEl) { typeEl.addEventListener('change', validateDiscount); }
             if (valEl) { valEl.addEventListener('input', validateDiscount); }
