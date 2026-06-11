@@ -55,8 +55,27 @@ class ProductAdminController extends Controller
                     }
                 },
             ],
-            'discount_start_at'  => 'nullable|date',
-            'discount_end_at'    => 'nullable|date|after_or_equal:discount_start_at',
+            'discount_start_at'  => [
+                'nullable',
+                'date',
+                function ($attribute, $value, $fail) use ($request) {
+                    if (!$value) return;
+                    if ($this->parseLocalDateTime($value, $request->timezone_offset)->lt(now())) {
+                        $fail('Tanggal mulai diskon tidak boleh kurang dari waktu saat ini.');
+                    }
+                },
+            ],
+            'discount_end_at'    => [
+                'nullable',
+                'date',
+                'after_or_equal:discount_start_at',
+                function ($attribute, $value, $fail) use ($request) {
+                    if (!$value) return;
+                    if ($this->parseLocalDateTime($value, $request->timezone_offset)->lte(now())) {
+                        $fail('Tanggal berakhir diskon harus lebih dari waktu saat ini.');
+                    }
+                },
+            ],
         ]);
 
         $slug = Str::slug($request->name);
@@ -120,8 +139,27 @@ class ProductAdminController extends Controller
                     }
                 },
             ],
-            'discount_start_at'  => 'nullable|date',
-            'discount_end_at'    => 'nullable|date|after_or_equal:discount_start_at',
+            'discount_start_at'  => [
+                'nullable',
+                'date',
+                function ($attribute, $value, $fail) use ($request) {
+                    if (!$value) return;
+                    if ($this->parseLocalDateTime($value, $request->timezone_offset)->lt(now())) {
+                        $fail('Tanggal mulai diskon tidak boleh kurang dari waktu saat ini.');
+                    }
+                },
+            ],
+            'discount_end_at'    => [
+                'nullable',
+                'date',
+                'after_or_equal:discount_start_at',
+                function ($attribute, $value, $fail) use ($request) {
+                    if (!$value) return;
+                    if ($this->parseLocalDateTime($value, $request->timezone_offset)->lte(now())) {
+                        $fail('Tanggal berakhir diskon harus lebih dari waktu saat ini.');
+                    }
+                },
+            ],
         ]);
 
         $product->update([
@@ -168,6 +206,17 @@ class ProductAdminController extends Controller
         Storage::disk('public')->delete($image->image_path);
         $image->delete();
         return back()->with('success', 'Foto berhasil dihapus.');
+    }
+
+    private function parseLocalDateTime(?string $datetime, ?string $tzOffset): ?Carbon
+    {
+        if (!$datetime) return null;
+        $tzOffset = (int) ($tzOffset ?? 0);
+        $sign = $tzOffset <= 0 ? '+' : '-';
+        $hours = str_pad((string) abs(intdiv($tzOffset, 60)), 2, '0', STR_PAD_LEFT);
+        $mins = str_pad((string) abs($tzOffset % 60), 2, '0', STR_PAD_LEFT);
+        $timezone = sprintf('%s%s:%s', $sign, $hours, $mins);
+        return Carbon::parse($datetime, $timezone);
     }
 
     private function localToUtc(?string $datetime, ?string $tzOffset): ?string
