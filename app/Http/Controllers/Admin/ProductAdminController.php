@@ -55,24 +55,22 @@ class ProductAdminController extends Controller
                     }
                 },
             ],
-            'discount_start_at'  => [
-                'nullable',
-                'date',
-                function ($attribute, $value, $fail) use ($request) {
-                    if (!$value) return;
-                    if ($this->parseLocalDateTime($value, $request->timezone_offset)->lt(now())) {
-                        $fail('Tanggal mulai diskon tidak boleh kurang dari waktu saat ini.');
-                    }
-                },
-            ],
+            'discount_start_at'  => 'nullable|date',
             'discount_end_at'    => [
                 'nullable',
                 'date',
-                'after_or_equal:discount_start_at',
                 function ($attribute, $value, $fail) use ($request) {
                     if (!$value) return;
-                    if ($this->parseLocalDateTime($value, $request->timezone_offset)->lte(now())) {
-                        $fail('Tanggal berakhir diskon harus lebih dari waktu saat ini.');
+                    $end = $this->parseLocalDateTime($value, $request->timezone_offset);
+                    // must be > now
+                    if ($end->lte(now())) {
+                        $fail('Tanggal berakhir diskon harus lebih dari waktu saat ini. Contoh: jika sekarang jam 21:00, maka minimal jam 21:01.');
+                        return;
+                    }
+                    // must be >= discount_start_at
+                    $start = $request->discount_start_at;
+                    if ($start && $end->lt($this->parseLocalDateTime($start, $request->timezone_offset))) {
+                        $fail('Tanggal berakhir diskon tidak boleh kurang dari tanggal mulai diskon.');
                     }
                 },
             ],
@@ -139,24 +137,22 @@ class ProductAdminController extends Controller
                     }
                 },
             ],
-            'discount_start_at'  => [
-                'nullable',
-                'date',
-                function ($attribute, $value, $fail) use ($request) {
-                    if (!$value) return;
-                    if ($this->parseLocalDateTime($value, $request->timezone_offset)->lt(now())) {
-                        $fail('Tanggal mulai diskon tidak boleh kurang dari waktu saat ini.');
-                    }
-                },
-            ],
+            'discount_start_at'  => 'nullable|date',
             'discount_end_at'    => [
                 'nullable',
                 'date',
-                'after_or_equal:discount_start_at',
                 function ($attribute, $value, $fail) use ($request) {
                     if (!$value) return;
-                    if ($this->parseLocalDateTime($value, $request->timezone_offset)->lte(now())) {
-                        $fail('Tanggal berakhir diskon harus lebih dari waktu saat ini.');
+                    $end = $this->parseLocalDateTime($value, $request->timezone_offset);
+                    // must be > now
+                    if ($end->lte(now())) {
+                        $fail('Tanggal berakhir diskon harus lebih dari waktu saat ini. Contoh: jika sekarang jam 21:00, maka minimal jam 21:01.');
+                        return;
+                    }
+                    // must be >= discount_start_at
+                    $start = $request->discount_start_at;
+                    if ($start && $end->lt($this->parseLocalDateTime($start, $request->timezone_offset))) {
+                        $fail('Tanggal berakhir diskon tidak boleh kurang dari tanggal mulai diskon.');
                     }
                 },
             ],
