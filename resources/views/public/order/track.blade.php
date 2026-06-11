@@ -90,7 +90,12 @@
                 @endif
                 <div class="flex-1">
                     <div class="font-semibold text-sm text-gray-800">{{ $item->product_name }}</div>
-                    <div class="text-xs text-gray-400">{{ $item->quantity }} × {{ $item->formatted_price }}</div>
+                    <div class="text-xs text-gray-400">
+                        @if($item->original_price && $item->original_price != $item->price)
+                        <span class="line-through">Rp {{ number_format($item->original_price, 0, ',', '.') }}</span> →
+                        @endif
+                        {{ $item->quantity }} × {{ $item->formatted_price }}
+                    </div>
                 </div>
                 <div class="font-bold text-sm" style="color:#1a5c38;">{{ $item->formatted_subtotal }}</div>
             </div>

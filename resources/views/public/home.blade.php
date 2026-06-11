@@ -88,6 +88,11 @@
                     @else
                     <div class="w-full h-full flex items-center justify-center text-4xl opacity-20">🌿</div>
                     @endif
+                    @if($product->discounted_price)
+                    <div class="absolute top-3 left-3 bg-rose-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow-md z-10">
+                        -{{ $product->discount_percentage }}%
+                    </div>
+                    @endif
                 </a>
                 <div class="p-4 sm:p-6 flex flex-col flex-grow">
                     <a href="{{ route('products.show', $product->slug) }}" class="block mb-2">
@@ -96,7 +101,14 @@
                     <p class="hidden sm:block text-sm text-slate-500 mb-4 line-clamp-2">{{ $product->description }}</p>
                     
                     <div class="mt-auto flex items-center justify-between">
-                        <div class="font-extrabold text-sm sm:text-lg" style="color: var(--primary);">{{ $product->formatted_price }}</div>
+                        <div>
+                            @if($product->discounted_price)
+                            <div class="font-extrabold text-sm sm:text-lg" style="color: var(--primary);">{{ $product->formatted_discounted_price }}</div>
+                            <div class="text-xs text-slate-400 line-through font-medium">{{ $product->formatted_price }}</div>
+                            @else
+                            <div class="font-extrabold text-sm sm:text-lg" style="color: var(--primary);">{{ $product->formatted_price }}</div>
+                            @endif
+                        </div>
                         <a href="{{ route('products.show', $product->slug) }}" class="p-2 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                         </a>

@@ -18,7 +18,12 @@
                 @foreach($order->items as $item)
                 <div class="flex justify-between text-sm py-2.5 border-b border-slate-100 last:border-0 font-medium">
                     <span class="text-slate-700">{{ $item->product_name }} <span class="text-slate-400 font-normal">× {{ $item->quantity }}</span></span>
-                    <strong class="text-slate-800">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</strong>
+                    <div class="text-right">
+                        @if($item->original_price && $item->original_price != $item->price)
+                        <div class="text-[10px] text-slate-400 line-through">Rp {{ number_format($item->original_price, 0, ',', '.') }}</div>
+                        @endif
+                        <strong class="text-slate-800">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</strong>
+                    </div>
                 </div>
                 @endforeach
                 <div class="flex justify-between text-sm py-2.5 border-b border-slate-100 font-medium">

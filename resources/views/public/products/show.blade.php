@@ -7,7 +7,8 @@
         $formattedWa = '62' . substr($formattedWa, 1);
     }
     $formattedWa = preg_replace('/[^0-9]/', '', $formattedWa);
-    $waMessage = rawurlencode("Halo Bharata Herbal ID, saya tertarik dengan produk " . $product->name . " (Harga: " . $product->formatted_price . "). Apakah produk ini ready stock? Saya ingin berkonsultasi lebih lanjut.");
+    $displayPrice = $product->formatted_discounted_price ?? $product->formatted_price;
+    $waMessage = rawurlencode("Halo Bharata Herbal ID, saya tertarik dengan produk " . $product->name . " (Harga: " . $displayPrice . "). Apakah produk ini ready stock? Saya ingin berkonsultasi lebih lanjut.");
     $primaryImg = $product->images->where('is_primary', true)->first() ?? $product->images->first();
 @endphp
 
@@ -43,6 +44,11 @@
                     @else
                         <div class="w-full h-full flex items-center justify-center text-8xl opacity-20">🌿</div>
                     @endif
+                    @if($product->discounted_price)
+                    <div class="absolute top-4 left-4 bg-rose-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md z-10">
+                        -{{ $product->discount_percentage }}%
+                    </div>
+                    @endif
                 </div>
 
                 {{-- Thumbnail strip --}}
@@ -66,9 +72,21 @@
 
                 {{-- Price (prominent – shown first like Shopee mobile) --}}
                 <div class="bg-emerald-50/60 rounded-2xl px-5 py-4 border border-emerald-100/60">
+                    @if($product->discounted_price)
+                    <div class="flex items-center gap-3">
+                        <div class="text-3xl font-extrabold" style="color: var(--primary);">
+                            {{ $product->formatted_discounted_price }}
+                        </div>
+                        <div class="text-base text-slate-400 line-through font-medium">{{ $product->formatted_price }}</div>
+                    </div>
+                    <div class="mt-1 inline-block bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                        Hemat {{ $product->discount_percentage }}%
+                    </div>
+                    @else
                     <div class="text-3xl font-extrabold" style="color: var(--primary);">
                         {{ $product->formatted_price }}
                     </div>
+                    @endif
                 </div>
 
                 {{-- Product name --}}
@@ -183,11 +201,21 @@
                         @else
                         <div class="w-full h-full flex items-center justify-center text-4xl opacity-20">🌿</div>
                         @endif
+                        @if($rel->discounted_price)
+                        <div class="absolute top-2 left-2 bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-md z-10">
+                            -{{ $rel->discount_percentage }}%
+                        </div>
+                        @endif
                     </div>
                     <div class="p-3 flex flex-col flex-1">
                         <h4 class="font-semibold text-sm text-slate-700 leading-tight line-clamp-2 mb-1">{{ $rel->name }}</h4>
-                        <div class="font-extrabold text-sm mt-auto" style="color: var(--primary);">
-                            {{ $rel->formatted_price }}
+                        <div class="mt-auto">
+                            @if($rel->discounted_price)
+                            <div class="font-extrabold text-sm" style="color: var(--primary);">{{ $rel->formatted_discounted_price }}</div>
+                            <div class="text-[10px] text-slate-400 line-through">{{ $rel->formatted_price }}</div>
+                            @else
+                            <div class="font-extrabold text-sm" style="color: var(--primary);">{{ $rel->formatted_price }}</div>
+                            @endif
                         </div>
                     </div>
                 </a>
@@ -325,7 +353,12 @@
                 @endif
                 <div>
                     <div class="font-bold text-base leading-tight text-slate-800 line-clamp-2">{{ $product->name }}</div>
-                    <div class="text-lg font-extrabold mt-0.5" style="color: var(--primary);">{{ $product->formatted_price }}</div>
+                    <div class="text-lg font-extrabold mt-0.5" style="color: var(--primary);">
+                        {{ $product->formatted_discounted_price ?? $product->formatted_price }}
+                    </div>
+                    @if($product->discounted_price)
+                    <div class="text-xs text-slate-400 line-through">{{ $product->formatted_price }}</div>
+                    @endif
                 </div>
             </div>
 

@@ -10,11 +10,14 @@ class OrderItem extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'order_id', 'product_id', 'product_name', 'price', 'quantity', 'subtotal',
+        'order_id', 'product_id', 'product_name', 'price', 'original_price',
+        'discount_amount', 'quantity', 'subtotal',
     ];
 
     protected $casts = [
         'price' => 'integer',
+        'original_price' => 'integer',
+        'discount_amount' => 'integer',
         'quantity' => 'integer',
         'subtotal' => 'integer',
     ];

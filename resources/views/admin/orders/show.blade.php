@@ -48,7 +48,8 @@
                     <tr class="text-xs text-gray-400 uppercase">
                         <th class="text-left pb-2">Produk</th>
                         <th class="text-center pb-2">Qty</th>
-                        <th class="text-right pb-2">Harga</th>
+                        <th class="text-right pb-2">Harga Asli</th>
+                        <th class="text-right pb-2">Diskon</th>
                         <th class="text-right pb-2">Subtotal</th>
                     </tr>
                 </thead>
@@ -57,7 +58,21 @@
                     <tr class="border-b border-gray-50">
                         <td class="py-3">{{ $item->product_name }}</td>
                         <td class="py-3 text-center">{{ $item->quantity }}</td>
-                        <td class="py-3 text-right">Rp {{ number_format($item->price,0,',','.') }}</td>
+                        <td class="py-3 text-right">
+                            @if($item->original_price && $item->original_price != $item->price)
+                            <span class="line-through text-gray-400">Rp {{ number_format($item->original_price,0,',','.') }}</span>
+                            <br><span class="text-emerald-700 font-semibold">Rp {{ number_format($item->price,0,',','.') }}</span>
+                            @else
+                            Rp {{ number_format($item->price,0,',','.') }}
+                            @endif
+                        </td>
+                        <td class="py-3 text-right">
+                            @if($item->discount_amount)
+                            <span class="text-rose-600 font-semibold">-Rp {{ number_format($item->discount_amount,0,',','.') }}</span>
+                            @else
+                            <span class="text-gray-300">—</span>
+                            @endif
+                        </td>
                         <td class="py-3 text-right font-semibold">Rp {{ number_format($item->subtotal,0,',','.') }}</td>
                     </tr>
                     @endforeach

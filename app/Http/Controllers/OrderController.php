@@ -16,6 +16,7 @@ class OrderController extends Controller
     public function form(Request $request)
     {
         $products = Product::with('images')->where('is_active', true)->get();
+        $products->each->append('effective_price');
         $settings = StoreSetting::getInstance();
 
         // Kirim daftar metode pembayaran yang aktif ke view
@@ -85,15 +86,20 @@ class OrderController extends Controller
             $itemsData = [];
 
             foreach ($request->items as $item) {
-                $product      = Product::findOrFail($item['product_id']);
-                $itemSubtotal = $product->price * $item['quantity'];
+                $product  = Product::findOrFail($item['product_id']);
+                $effPrice = $product->effective_price;
+                $origPrice = $product->price;
+                $discAmt   = $origPrice - $effPrice;
+                $itemSubtotal = $effPrice * $item['quantity'];
                 $subtotal    += $itemSubtotal;
                 $itemsData[]  = [
-                    'product_id'   => $product->id,
-                    'product_name' => $product->name,
-                    'price'        => $product->price,
-                    'quantity'     => $item['quantity'],
-                    'subtotal'     => $itemSubtotal,
+                    'product_id'     => $product->id,
+                    'product_name'   => $product->name,
+                    'price'          => $effPrice,
+                    'original_price' => $origPrice,
+                    'discount_amount'=> $discAmt > 0 ? $discAmt : null,
+                    'quantity'       => $item['quantity'],
+                    'subtotal'       => $itemSubtotal,
                 ];
                 $product->decrement('stock', $item['quantity']);
             }

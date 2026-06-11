@@ -40,11 +40,13 @@ class CartController extends Controller
             $cart[$product->id]['quantity'] = $newQty;
         } else {
             $primaryImage = $product->images->where('is_primary', true)->first() ?? $product->images->first();
+            $effectivePrice = $product->effective_price;
             $cart[$product->id] = [
                 'id' => $product->id,
                 'name' => $product->name,
                 'slug' => $product->slug,
-                'price' => $product->price,
+                'price' => $effectivePrice,
+                'original_price' => $product->price,
                 'quantity' => $request->quantity,
                 'image_path' => $primaryImage ? $primaryImage->image_path : null,
                 'stock' => $product->stock,

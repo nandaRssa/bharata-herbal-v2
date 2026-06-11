@@ -21,6 +21,7 @@
             <tr>
                 <th class="text-left">Produk</th>
                 <th class="text-left">Harga Jual</th>
+                <th class="text-left">Diskon</th>
                 <th class="text-left">Sisa Stok</th>
                 <th class="text-left">Status</th>
                 <th class="text-left">Aksi Manajemen</th>
@@ -45,6 +46,15 @@
                     </div>
                 </td>
                 <td class="font-extrabold" style="color: var(--gold-dark);">Rp {{ number_format($product->price,0,',','.') }}</td>
+                <td>
+                    @if($product->is_discount_active && $product->discounted_price)
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-100">
+                        -{{ $product->discount_percentage }}%
+                    </span>
+                    @else
+                    <span class="text-[10px] text-slate-300 font-semibold">—</span>
+                    @endif
+                </td>
                 <td>
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold
                         @if($product->stock < 10) bg-rose-50 text-rose-800 border border-rose-100
@@ -80,7 +90,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="5" class="py-16 text-center text-slate-400 font-medium">
+                <td colspan="6" class="py-16 text-center text-slate-400 font-medium">
                     Belum ada produk terdaftar. <a href="{{ route('admin.products.create') }}" style="color:var(--primary)" class="font-bold underline">Tambah produk sekarang</a>
                 </td>
             </tr>

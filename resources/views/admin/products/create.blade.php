@@ -59,6 +59,64 @@
         </div>
     </div>
 
+    <!-- Diskon Produk -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 mb-6">
+        <h3 class="font-bold text-lg font-serif-elegant border-b border-slate-100 pb-3 mb-5" style="color: var(--primary);">Diskon Produk</h3>
+        <div class="space-y-5">
+            <div class="flex items-center gap-3">
+                <input type="checkbox" name="is_discount_active" value="1" id="is_discount_active" {{ old('is_discount_active') ? 'checked' : '' }}
+                    class="w-5 h-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                <label for="is_discount_active" class="text-sm font-bold text-slate-600">Aktifkan Diskon</label>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Tipe Diskon</label>
+                    <select name="discount_type" class="w-full border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/10 focus:border-emerald-600/30 text-slate-700 font-medium transition duration-200">
+                        <option value="">Pilih Tipe</option>
+                        <option value="percentage" {{ old('discount_type') == 'percentage' ? 'selected' : '' }}>Persen (%)</option>
+                        <option value="fixed" {{ old('discount_type') == 'fixed' ? 'selected' : '' }}>Nominal (Rp)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Nilai Diskon</label>
+                    <input type="number" name="discount_value" value="{{ old('discount_value') }}" min="0"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/10 focus:border-emerald-600/30 text-slate-700 font-bold transition duration-200">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Mulai</label>
+                    <input type="datetime-local" name="discount_start_at" value="{{ old('discount_start_at') }}"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/10 focus:border-emerald-600/30 text-slate-700 font-medium transition duration-200">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Berakhir</label>
+                    <input type="datetime-local" name="discount_end_at" value="{{ old('discount_end_at') }}"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/10 focus:border-emerald-600/30 text-slate-700 font-medium transition duration-200">
+                </div>
+            </div>
+            <input type="hidden" name="timezone_offset" id="timezone_offset" value="0">
+        </div>
+    </div>
+
+    <script>
+    (function(){
+        var el=document.getElementById('timezone_offset'); if(el) el.value=new Date().getTimezoneOffset();
+        var typeEl = document.querySelector('[name="discount_type"]');
+        var valEl = document.querySelector('[name="discount_value"]');
+        var priceEl = document.querySelector('[name="price"]');
+        function validateDiscount() {
+            if (!typeEl || !valEl || !valEl.value) return;
+            var val = parseInt(valEl.value);
+            var price = parseInt(priceEl ? priceEl.value : 0);
+            if (typeEl.value === 'percentage' && val > 100) { valEl.setCustomValidity('Diskon persen tidak boleh melebihi 100%.'); }
+            else if (typeEl.value === 'fixed' && val > price) { valEl.setCustomValidity('Diskon nominal tidak boleh melebihi harga asli produk.'); }
+            else { valEl.setCustomValidity(''); }
+        }
+        if (typeEl) { typeEl.addEventListener('change', validateDiscount); }
+        if (valEl) { valEl.addEventListener('input', validateDiscount); }
+        if (priceEl) { priceEl.addEventListener('input', validateDiscount); }
+    })();
+    </script>
+
     <!-- Manfaat Dinamis -->
     <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 mb-6" x-data="{ benefits: {{ json_encode(old('benefits', [''])) }} }">
         <h3 class="font-bold text-lg font-serif-elegant border-b border-slate-100 pb-3 mb-5" style="color: var(--primary);">Manfaat Utama Produk</h3>

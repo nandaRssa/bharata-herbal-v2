@@ -173,9 +173,9 @@
                             <select :name="'items[' + idx + '][product_id]'" x-model="item.product_id" required
                                 class="w-full border border-slate-200 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600/10 text-slate-700 font-medium">
                                 <option value="">-- Pilih Produk --</option>
-                                @foreach($products as $p)
-                                <option value="{{ $p->id }}">{{ $p->name }} — {{ $p->formatted_price }}</option>
-                                @endforeach
+                                                                @foreach($products as $p)
+                                                                <option value="{{ $p->id }}">{{ $p->name }} — {{ $p->formatted_effective_price }}</option>
+                                                                @endforeach
                             </select>
                         </div>
                         <div class="w-20">
@@ -318,7 +318,7 @@
                     <template x-for="item in form.items">
                         <div class="flex justify-between items-center text-slate-600 text-sm font-medium" x-show="item.product_id">
                             <span x-text="(getProduct(item.product_id)?.name || '') + ' (x' + item.quantity + ')'"></span>
-                            <span class="font-bold text-slate-800" x-text="formatRp((getProduct(item.product_id)?.price || 0) * item.quantity)"></span>
+                            <span class="font-bold text-slate-800" x-text="formatRp(((getProduct(item.product_id)?.effective_price || getProduct(item.product_id)?.price || 0)) * item.quantity)"></span>
                         </div>
                     </template>
                     <div class="flex justify-between items-center text-slate-600 text-sm font-medium pt-2 border-t border-slate-200/40">
@@ -396,7 +396,8 @@
             getSubtotal() {
                 return this.form.items.reduce((sum, item) => {
                     const p = this.getProduct(item.product_id);
-                    return sum + (p ? p.price * item.quantity : 0);
+                    const price = p ? (p.effective_price || p.price) : 0;
+                    return sum + (price * item.quantity);
                 }, 0);
             },
             getTotal() {

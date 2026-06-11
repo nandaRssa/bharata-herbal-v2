@@ -8,6 +8,7 @@ use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class ProductAdminController extends Controller
 {
@@ -32,14 +33,30 @@ class ProductAdminController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'        => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'ingredients' => 'nullable|string',
-            'usage'       => 'nullable|string',
-            'price'       => 'required|integer|min:0',
-            'stock'       => 'required|integer|min:0',
-            'benefits'    => 'nullable|array',
-            'images.*'    => 'nullable|image|max:2048',
+            'name'               => 'required|string|max:255',
+            'description'        => 'nullable|string',
+            'ingredients'        => 'nullable|string',
+            'usage'              => 'nullable|string',
+            'price'              => 'required|integer|min:0',
+            'stock'              => 'required|integer|min:0',
+            'benefits'           => 'nullable|array',
+            'images.*'           => 'nullable|image|max:2048',
+            'discount_type'      => 'nullable|in:percentage,fixed',
+            'discount_value'     => [
+                'nullable',
+                'integer',
+                'min:0',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->discount_type === 'percentage' && $value > 100) {
+                        $fail('Diskon persen tidak boleh melebihi 100%.');
+                    }
+                    if ($request->discount_type === 'fixed' && $value > $request->price) {
+                        $fail('Diskon nominal tidak boleh melebihi harga asli produk.');
+                    }
+                },
+            ],
+            'discount_start_at'  => 'nullable|date',
+            'discount_end_at'    => 'nullable|date|after_or_equal:discount_start_at',
         ]);
 
         $slug = Str::slug($request->name);
@@ -50,15 +67,20 @@ class ProductAdminController extends Controller
         }
 
         $product = Product::create([
-            'name'        => $request->name,
-            'slug'        => $slug,
-            'description' => $request->description,
-            'benefits'    => array_filter($request->benefits ?? []),
-            'ingredients' => $request->ingredients,
-            'usage'       => $request->usage,
-            'price'       => $request->price,
-            'stock'       => $request->stock,
-            'is_active'   => $request->boolean('is_active', true),
+            'name'              => $request->name,
+            'slug'              => $slug,
+            'description'       => $request->description,
+            'benefits'          => array_filter($request->benefits ?? []),
+            'ingredients'       => $request->ingredients,
+            'usage'             => $request->usage,
+            'price'             => $request->price,
+            'stock'             => $request->stock,
+            'is_active'         => $request->boolean('is_active', true),
+            'discount_type'     => $request->discount_type,
+            'discount_value'    => $request->discount_value,
+            'discount_start_at' => $this->localToUtc($request->discount_start_at, $request->timezone_offset),
+            'discount_end_at'   => $this->localToUtc($request->discount_end_at, $request->timezone_offset),
+            'is_discount_active' => $request->boolean('is_discount_active'),
         ]);
 
         $this->handleImageUploads($request, $product);
@@ -76,25 +98,46 @@ class ProductAdminController extends Controller
     public function update(Request $request, Product $product)
     {
         $request->validate([
-            'name'        => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'ingredients' => 'nullable|string',
-            'usage'       => 'nullable|string',
-            'price'       => 'required|integer|min:0',
-            'stock'       => 'required|integer|min:0',
-            'benefits'    => 'nullable|array',
-            'images.*'    => 'nullable|image|max:2048',
+            'name'               => 'required|string|max:255',
+            'description'        => 'nullable|string',
+            'ingredients'        => 'nullable|string',
+            'usage'              => 'nullable|string',
+            'price'              => 'required|integer|min:0',
+            'stock'              => 'required|integer|min:0',
+            'benefits'           => 'nullable|array',
+            'images.*'           => 'nullable|image|max:2048',
+            'discount_type'      => 'nullable|in:percentage,fixed',
+            'discount_value'     => [
+                'nullable',
+                'integer',
+                'min:0',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->discount_type === 'percentage' && $value > 100) {
+                        $fail('Diskon persen tidak boleh melebihi 100%.');
+                    }
+                    if ($request->discount_type === 'fixed' && $value > $request->price) {
+                        $fail('Diskon nominal tidak boleh melebihi harga asli produk.');
+                    }
+                },
+            ],
+            'discount_start_at'  => 'nullable|date',
+            'discount_end_at'    => 'nullable|date|after_or_equal:discount_start_at',
         ]);
 
         $product->update([
-            'name'        => $request->name,
-            'description' => $request->description,
-            'benefits'    => array_filter($request->benefits ?? []),
-            'ingredients' => $request->ingredients,
-            'usage'       => $request->usage,
-            'price'       => $request->price,
-            'stock'       => $request->stock,
-            'is_active'   => $request->boolean('is_active'),
+            'name'               => $request->name,
+            'description'        => $request->description,
+            'benefits'           => array_filter($request->benefits ?? []),
+            'ingredients'        => $request->ingredients,
+            'usage'              => $request->usage,
+            'price'              => $request->price,
+            'stock'              => $request->stock,
+            'is_active'          => $request->boolean('is_active'),
+            'discount_type'      => $request->discount_type,
+            'discount_value'     => $request->discount_value,
+            'discount_start_at'  => $this->localToUtc($request->discount_start_at, $request->timezone_offset),
+            'discount_end_at'    => $this->localToUtc($request->discount_end_at, $request->timezone_offset),
+            'is_discount_active' => $request->boolean('is_discount_active'),
         ]);
 
         $this->handleImageUploads($request, $product);
@@ -125,6 +168,19 @@ class ProductAdminController extends Controller
         Storage::disk('public')->delete($image->image_path);
         $image->delete();
         return back()->with('success', 'Foto berhasil dihapus.');
+    }
+
+    private function localToUtc(?string $datetime, ?string $tzOffset): ?string
+    {
+        if (!$datetime) {
+            return null;
+        }
+        $tzOffset = (int) ($tzOffset ?? 0);
+        $sign = $tzOffset <= 0 ? '+' : '-';
+        $hours = str_pad((string) abs(intdiv($tzOffset, 60)), 2, '0', STR_PAD_LEFT);
+        $mins = str_pad((string) abs($tzOffset % 60), 2, '0', STR_PAD_LEFT);
+        $timezone = sprintf('%s%s:%s', $sign, $hours, $mins);
+        return Carbon::parse($datetime, $timezone)->utc()->format('Y-m-d H:i:s');
     }
 
     private function handleImageUploads(Request $request, Product $product): void

@@ -71,6 +71,11 @@
                 @else
                 <div class="w-full h-full flex items-center justify-center text-6xl opacity-30">🌿</div>
                 @endif
+                @if($product->discounted_price)
+                <div class="absolute top-3 left-3 bg-rose-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow-md z-10">
+                    -{{ $product->discount_percentage }}%
+                </div>
+                @endif
                 <div class="absolute inset-0 bg-emerald-900/0 group-hover:bg-emerald-900/5 transition duration-300"></div>
             </div>
             
@@ -91,7 +96,14 @@
                 
                 <!-- Price & CTA Action -->
                 <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
-                    <div class="font-extrabold text-lg text-emerald-600">{{ $product->formatted_price }}</div>
+                    <div>
+                        @if($product->discounted_price)
+                        <div class="text-lg font-extrabold" style="color: var(--primary);">{{ $product->formatted_discounted_price }}</div>
+                        <div class="text-xs text-slate-400 line-through font-medium">{{ $product->formatted_price }}</div>
+                        @else
+                        <div class="font-extrabold text-lg text-emerald-600">{{ $product->formatted_price }}</div>
+                        @endif
+                    </div>
                     <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition duration-300">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </div>

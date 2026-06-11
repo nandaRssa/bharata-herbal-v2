@@ -55,7 +55,12 @@
                                 </div>
                                 <div class="space-y-1">
                                     <a :href="'/produk/' + item.slug" class="font-bold text-lg text-slate-800 hover:text-amber-700 transition duration-150" x-text="item.name"></a>
-                                    <div class="text-xs text-slate-400 font-medium md:hidden" x-text="formatRp(item.price)"></div>
+                                    <div class="flex items-center gap-2">
+                                        <template x-if="item.original_price && item.original_price != item.price">
+                                            <span class="text-xs text-slate-400 line-through font-medium" x-text="formatRp(item.original_price)"></span>
+                                        </template>
+                                        <div class="text-xs text-slate-600 font-semibold" x-text="formatRp(item.price)"></div>
+                                    </div>
                                     <button type="button" @click="removeItem(item)" class="text-xs text-rose-500 hover:text-rose-700 font-bold flex items-center gap-1 mt-2 transition duration-150">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -66,7 +71,12 @@
                             </div>
 
                             <!-- Harga (Desktop Only) -->
-                            <div class="hidden md:block col-span-2 text-center font-semibold text-slate-600" x-text="formatRp(item.price)"></div>
+                            <div class="hidden md:block col-span-2 text-center">
+                                <template x-if="item.original_price && item.original_price != item.price">
+                                    <div class="text-xs text-slate-400 line-through font-medium" x-text="formatRp(item.original_price)"></div>
+                                </template>
+                                <div class="font-semibold text-slate-600" x-text="formatRp(item.price)"></div>
+                            </div>
 
                             <!-- Qty Selector -->
                             <div class="col-span-1 md:col-span-2 flex justify-start md:justify-center">
