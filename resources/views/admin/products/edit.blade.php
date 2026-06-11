@@ -62,18 +62,19 @@
         </div>
 
         <!-- Diskon Produk -->
-        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 mb-6">
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 mb-6" x-data="{ discountEnabled: {{ old('is_discount_active', $product->is_discount_active) ? 'true' : 'false' }} }">
             <h3 class="font-bold text-lg font-serif-elegant border-b border-slate-100 pb-3 mb-5" style="color: var(--primary);">Diskon Produk</h3>
             <div class="space-y-5">
                 <div class="flex items-center gap-3">
                     <input type="checkbox" name="is_discount_active" value="1" id="is_discount_active" {{ old('is_discount_active', $product->is_discount_active) ? 'checked' : '' }}
+                        x-model="discountEnabled"
                         class="w-5 h-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
                     <label for="is_discount_active" class="text-sm font-bold text-slate-600">Aktifkan Diskon</label>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5" :class="discountEnabled ? '' : 'opacity-40 pointer-events-none'">
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Tipe Diskon</label>
-                        <select name="discount_type" class="w-full border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/10 focus:border-emerald-600/30 text-slate-700 font-medium transition duration-200">
+                        <select name="discount_type" :disabled="!discountEnabled" class="w-full border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/10 focus:border-emerald-600/30 text-slate-700 font-medium transition duration-200">
                             <option value="">Pilih Tipe</option>
                             <option value="percentage" {{ old('discount_type', $product->discount_type) == 'percentage' ? 'selected' : '' }}>Persen (%)</option>
                             <option value="fixed" {{ old('discount_type', $product->discount_type) == 'fixed' ? 'selected' : '' }}>Nominal (Rp)</option>
@@ -81,18 +82,18 @@
                     </div>
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Nilai Diskon</label>
-                    <input type="number" name="discount_value" value="{{ old('discount_value', $product->discount_value) }}" min="0"
+                    <input type="number" name="discount_value" value="{{ old('discount_value', $product->discount_value) }}" min="0" :disabled="!discountEnabled"
                         class="w-full border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/10 focus:border-emerald-600/30 text-slate-700 font-bold transition duration-200">
                     <p id="discount-warning" class="mt-1.5 text-xs font-bold hidden">⚠️ <span id="discount-warning-text"></span></p>
                 </div>
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Mulai</label>
-                        <input type="datetime-local" name="discount_start_at" value="{{ old('discount_start_at', $product->discount_start_at ? $product->discount_start_at->format('Y-m-d\TH:i') : '') }}"
+                        <input type="datetime-local" name="discount_start_at" value="{{ old('discount_start_at', $product->discount_start_at ? $product->discount_start_at->format('Y-m-d\TH:i') : '') }}" :disabled="!discountEnabled"
                             class="w-full border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/10 focus:border-emerald-600/30 text-slate-700 font-medium transition duration-200">
                     </div>
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Berakhir</label>
-                        <input type="datetime-local" name="discount_end_at" value="{{ old('discount_end_at', $product->discount_end_at ? $product->discount_end_at->format('Y-m-d\TH:i') : '') }}"
+                        <input type="datetime-local" name="discount_end_at" value="{{ old('discount_end_at', $product->discount_end_at ? $product->discount_end_at->format('Y-m-d\TH:i') : '') }}" :disabled="!discountEnabled"
                             class="w-full border border-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/10 focus:border-emerald-600/30 text-slate-700 font-medium transition duration-200">
                     </div>
                 </div>
