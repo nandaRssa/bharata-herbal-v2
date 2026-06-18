@@ -48,6 +48,7 @@ Route::post('/riwayat-pesanan', [OrderTrackingController::class, 'historyCheck']
 Route::post('/payment/notification', [PaymentController::class, 'notification'])->name('payment.notification');
 Route::post('/payment/confirm', [PaymentController::class, 'confirm'])->name('payment.confirm');
 Route::get('/pesanan/{order}/snap-token', [PaymentController::class, 'getSnapToken'])->name('payment.snap-token');
+Route::post('/pesanan/{order}/simulate-success', [PaymentController::class, 'simulateSuccess'])->name('payment.simulate-success');
 // ===================== AUTH ROUTES =====================
 require __DIR__.'/auth.php';
 

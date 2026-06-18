@@ -69,7 +69,17 @@
                     Total: <strong>Rp {{ number_format($order->total_amount, 0, ',', '.') }}</strong>
                 </p>
 
-                @if($order->midtrans_snap_token)
+                @if(!config('midtrans.is_production'))
+                {{-- Sandbox: langsung simulasi sukses --}}
+                <form method="POST" action="{{ route('payment.simulate-success', $order->id) }}">
+                    @csrf
+                    <button type="submit"
+                        class="w-full py-3.5 rounded-xl font-bold text-white text-sm transition shadow-md hover:shadow-lg hover:opacity-90"
+                        style="background: var(--primary);">
+                        💳 Selesaikan Pembayaran (Simulasi)
+                    </button>
+                </form>
+                @elseif($order->midtrans_snap_token)
                 {{-- Snap token sudah ada --}}
                 <button id="pay-button"
                     onclick="payWithSnapToken('{{ $order->midtrans_snap_token }}')"
@@ -87,7 +97,7 @@
                 @endif
 
                 <p class="text-[10px] text-amber-600 mt-3 text-center font-medium">
-                    Powered by Midtrans Sandbox — Transaksi test tidak memotong uang nyata
+                    @if(!config('midtrans.is_production')) Transaksi test — saldo tidak terpotong @else Powered by Midtrans @endif
                 </p>
             </div>
             @endif
@@ -139,8 +149,8 @@
 @endsection
 
 @push('scripts')
-{{-- Midtrans Snap JS (Sandbox) --}}
-@if($order->payment_method !== 'cod' && $order->payment_status !== 'confirmed')
+{{-- Midtrans Snap JS --}}
+@if($order->payment_method !== 'cod' && $order->payment_status !== 'confirmed' && config('midtrans.is_production'))
 <script src="https://app.sandbox.midtrans.com/snap/snap.js"
     data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script>

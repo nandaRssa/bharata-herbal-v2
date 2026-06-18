@@ -91,6 +91,29 @@ class PaymentController extends Controller
     }
 
     /**
+     * Simulasi sukses pembayaran (hanya di sandbox).
+     * POST /pesanan/{order}/simulate-success
+     */
+    public function simulateSuccess(Order $order)
+    {
+        if (config('midtrans.is_production')) {
+            abort(404);
+        }
+
+        if ($order->payment_status === 'confirmed') {
+            return redirect()->back()->with('success', 'Pembayaran sudah dikonfirmasi.');
+        }
+
+        $order->update([
+            'payment_status'          => 'confirmed',
+            'midtrans_transaction_id' => 'SIM-' . strtoupper(uniqid()),
+            'order_status'            => 'processing',
+        ]);
+
+        return redirect()->back()->with('success', '✅ Pembayaran berhasil! Pesanan sedang diproses.');
+    }
+
+    /**
      * Handle webhook notifikasi dari Midtrans.
      * POST /payment/notification
      * Dikecualikan dari CSRF.
