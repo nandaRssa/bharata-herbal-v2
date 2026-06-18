@@ -45,8 +45,7 @@ class MidtransService
         ];
 
         // Batasi Snap ke channel yang dipilih customer
-        // Khusus QRIS: fallback ke semua channel karena mungkin belum enable di akun
-        if ($paymentMethod && $paymentMethod !== 'qris') {
+        if ($paymentMethod) {
             $channel = $this->resolveMidtransChannel($paymentMethod);
             if ($channel) {
                 $params['enabled_payments'] = [$channel];
