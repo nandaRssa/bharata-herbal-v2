@@ -144,11 +144,10 @@
 <script src="https://app.sandbox.midtrans.com/snap/snap.js"
     data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script>
-    var currentPaymentMethod = '{{ $order->payment_method }}';
-
     function payWithSnapToken(token) {
         window.snap.pay(token, {
             onSuccess: function(result) {
+                // Reload halaman untuk update status dari DB
                 alert('✅ Pembayaran berhasil! Terima kasih.');
                 window.location.reload();
             },
@@ -172,30 +171,22 @@
         fetch('{{ route("payment.snap-token", $order->id) }}')
             .then(res => res.json())
             .then(data => {
-                btn.disabled = false;
-                btn.textContent = '💳 Bayar Sekarang';
                 if (data.token) {
                     payWithSnapToken(data.token);
+                    btn.disabled = false;
+                    btn.textContent = '💳 Bayar Sekarang';
                 } else {
                     alert('Gagal memuat token: ' + (data.error || 'Unknown error'));
+                    btn.disabled = false;
+                    btn.textContent = '💳 Bayar Sekarang';
                 }
             })
             .catch(err => {
+                alert('Koneksi gagal. Pastikan server berjalan dan coba lagi.');
                 btn.disabled = false;
                 btn.textContent = '💳 Bayar Sekarang';
-                alert('Koneksi gagal. Pastikan server berjalan dan coba lagi.');
             });
     }
-
-    // Auto-buka Snap segera setelah halaman dimuat
-    document.addEventListener('DOMContentLoaded', function() {
-        var token = '{{ $order->midtrans_snap_token ?? '' }}';
-        if (token) {
-            payWithSnapToken(token);
-        } else {
-            fetchAndPay();
-        }
-    });
 </script>
 @endif
 @endpush

@@ -112,19 +112,11 @@
             Total: <strong>{{ $order->formatted_total }}</strong>
         </p>
 
-        @if($order->midtrans_snap_token)
-        <button id="pay-button" onclick="payWithSnapToken('{{ $order->midtrans_snap_token }}')"
-            class="w-full py-3.5 rounded-xl font-bold text-white text-sm transition shadow-md hover:shadow-lg hover:opacity-90"
-            style="background: var(--primary);">
-            💳 Bayar Sekarang
-        </button>
-        @else
         <button id="pay-button" onclick="fetchAndPay()"
             class="w-full py-3.5 rounded-xl font-bold text-white text-sm transition shadow-md hover:shadow-lg hover:opacity-90"
             style="background: var(--primary);">
             💳 Bayar Sekarang
         </button>
-        @endif
 
         <p class="text-[10px] text-amber-600 mt-3 text-center font-medium">
             Selesaikan pembayaran dalam 24 jam, jika lewat pesanan otomatis dibatalkan.
@@ -273,7 +265,6 @@
 
     function fetchAndPay() {
         const btn = document.getElementById('pay-button');
-        if (!btn) return;
         btn.disabled = true;
         btn.textContent = '⏳ Memuat...';
 
@@ -292,16 +283,6 @@
                 btn.textContent = '💳 Bayar Sekarang';
             });
     }
-
-    // Auto-buka Snap segera setelah halaman dimuat
-    document.addEventListener('DOMContentLoaded', function() {
-        var token = '{{ $order->midtrans_snap_token ?? '' }}';
-        if (token) {
-            payWithSnapToken(token);
-        } else {
-            fetchAndPay();
-        }
-    });
 </script>
 @endif
 @endpush
