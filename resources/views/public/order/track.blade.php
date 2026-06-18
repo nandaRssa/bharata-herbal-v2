@@ -112,22 +112,11 @@
             Total: <strong>{{ $order->formatted_total }}</strong>
         </p>
 
-        @if(!config('midtrans.is_production'))
-        <form method="POST" action="{{ route('payment.simulate-success', $order->id) }}">
-            @csrf
-            <button type="submit"
-                class="w-full py-3.5 rounded-xl font-bold text-white text-sm transition shadow-md hover:shadow-lg hover:opacity-90"
-                style="background: var(--primary);">
-                💳 Selesaikan Pembayaran (Simulasi)
-            </button>
-        </form>
-        @else
         <button id="pay-button" onclick="fetchAndPay()"
             class="w-full py-3.5 rounded-xl font-bold text-white text-sm transition shadow-md hover:shadow-lg hover:opacity-90"
             style="background: var(--primary);">
             💳 Bayar Sekarang
         </button>
-        @endif
 
         <p class="text-[10px] text-amber-600 mt-3 text-center font-medium">
             @if(!config('midtrans.is_production')) Transaksi test — saldo tidak terpotong @else Selesaikan pembayaran dalam 24 jam, jika lewat pesanan otomatis dibatalkan. @endif
@@ -254,39 +243,48 @@
 @endsection
 
 @push('scripts')
-@if(isset($order) && $order->payment_method !== 'cod' && $order->payment_status === 'pending' && config('midtrans.is_production'))
+@if(isset($order) && $order->payment_method !== 'cod' && $order->payment_status === 'pending')
 <script src="https://app.sandbox.midtrans.com/snap/snap.js"
     data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script>
+    var isSandbox = {{ config('midtrans.is_production') ? 'false' : 'true' }};
+
+    function onFinish(result, method) {
+        if (isSandbox) {
+            var f = document.createElement('form');
+            f.method = 'POST';
+            f.action = '{{ route("payment.simulate-success", $order->id) }}';
+            var t = document.createElement('input');
+            t.type = 'hidden';
+            t.name = '_token';
+            t.value = '{{ csrf_token() }}';
+            f.appendChild(t);
+            document.body.appendChild(f);
+            f.submit();
+        } else if (method === 'onSuccess') {
+            fetch('{{ route("payment.confirm") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(result)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                alert('✅ Pembayaran berhasil! Terima kasih.');
+                window.location.reload();
+            })
+            .catch(function() {
+                alert('✅ Pembayaran berhasil! Terima kasih.');
+                window.location.reload();
+            });
+        }
+    }
+
     function payWithSnapToken(token) {
         window.snap.pay(token, {
-            onSuccess: function(result) {
-                fetch('{{ route("payment.confirm") }}', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(result)
-                })
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    if (data.status === 'ok') {
-                        alert('✅ Pembayaran berhasil! Terima kasih.');
-                    } else {
-                        alert('✅ Pembayaran berhasil. Tunggu konfirmasi...');
-                    }
-                    window.location.reload();
-                })
-                .catch(function() {
-                    alert('✅ Pembayaran berhasil! Terima kasih.');
-                    window.location.reload();
-                });
-            },
-            onPending: function(result) {
-                alert('⏳ Pembayaran sedang diproses. Cek aplikasi Anda.');
-            },
-            onError: function(result) {
-                alert('❌ Pembayaran gagal. Silakan coba lagi.');
-            },
-            onClose: function() {}
+            onSuccess: function(result)  { onFinish(result, 'onSuccess'); },
+            onPending: function(result)  { if (isSandbox) onFinish(result, 'onPending'); },
+            onError: function(result)    { if (isSandbox) onFinish(result, 'onError'); },
+            onClose: function()          { if (isSandbox) onFinish({}, 'onClose'); }
         });
     }
 

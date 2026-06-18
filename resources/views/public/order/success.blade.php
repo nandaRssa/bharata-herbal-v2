@@ -69,18 +69,7 @@
                     Total: <strong>Rp {{ number_format($order->total_amount, 0, ',', '.') }}</strong>
                 </p>
 
-                @if(!config('midtrans.is_production'))
-                {{-- Sandbox: langsung simulasi sukses --}}
-                <form method="POST" action="{{ route('payment.simulate-success', $order->id) }}">
-                    @csrf
-                    <button type="submit"
-                        class="w-full py-3.5 rounded-xl font-bold text-white text-sm transition shadow-md hover:shadow-lg hover:opacity-90"
-                        style="background: var(--primary);">
-                        💳 Selesaikan Pembayaran (Simulasi)
-                    </button>
-                </form>
-                @elseif($order->midtrans_snap_token)
-                {{-- Snap token sudah ada --}}
+                @if($order->midtrans_snap_token)
                 <button id="pay-button"
                     onclick="payWithSnapToken('{{ $order->midtrans_snap_token }}')"
                     class="w-full py-3.5 rounded-xl font-bold text-white text-sm transition shadow-md hover:shadow-lg hover:opacity-90"
@@ -88,7 +77,6 @@
                     💳 Bayar Sekarang
                 </button>
                 @else
-                {{-- Snap token belum ada, fetch dulu --}}
                 <button id="pay-button" onclick="fetchAndPay()"
                     class="w-full py-3.5 rounded-xl font-bold text-white text-sm transition shadow-md hover:shadow-lg hover:opacity-90"
                     style="background: var(--primary);">
@@ -149,43 +137,48 @@
 @endsection
 
 @push('scripts')
-{{-- Midtrans Snap JS --}}
-@if($order->payment_method !== 'cod' && $order->payment_status !== 'confirmed' && config('midtrans.is_production'))
+@if($order->payment_method !== 'cod' && $order->payment_status !== 'confirmed')
 <script src="https://app.sandbox.midtrans.com/snap/snap.js"
     data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script>
+    var isSandbox = {{ config('midtrans.is_production') ? 'false' : 'true' }};
+
+    function onFinish(result, method) {
+        if (isSandbox) {
+            var f = document.createElement('form');
+            f.method = 'POST';
+            f.action = '{{ route("payment.simulate-success", $order->id) }}';
+            var t = document.createElement('input');
+            t.type = 'hidden';
+            t.name = '_token';
+            t.value = '{{ csrf_token() }}';
+            f.appendChild(t);
+            document.body.appendChild(f);
+            f.submit();
+        } else if (method === 'onSuccess') {
+            fetch('{{ route("payment.confirm") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(result)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                alert('✅ Pembayaran berhasil! Terima kasih.');
+                window.location.reload();
+            })
+            .catch(function() {
+                alert('✅ Pembayaran berhasil! Terima kasih.');
+                window.location.reload();
+            });
+        }
+    }
+
     function payWithSnapToken(token) {
         window.snap.pay(token, {
-            onSuccess: function(result) {
-                fetch('{{ route("payment.confirm") }}', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(result)
-                })
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    if (data.status === 'ok') {
-                        alert('✅ Pembayaran berhasil! Terima kasih.');
-                        window.location.reload();
-                    } else {
-                        alert('✅ Pembayaran berhasil. Tunggu konfirmasi...');
-                        window.location.reload();
-                    }
-                })
-                .catch(function() {
-                    alert('✅ Pembayaran berhasil! Terima kasih.');
-                    window.location.reload();
-                });
-            },
-            onPending: function(result) {
-                alert('⏳ Pembayaran sedang diproses. Cek email/aplikasi Anda untuk menyelesaikan pembayaran.');
-            },
-            onError: function(result) {
-                alert('❌ Pembayaran gagal. Silakan coba lagi.');
-            },
-            onClose: function() {
-                // User menutup popup tanpa bayar — tidak apa-apa
-            }
+            onSuccess: function(result)  { onFinish(result, 'onSuccess'); },
+            onPending: function(result)  { if (isSandbox) onFinish(result, 'onPending'); },
+            onError: function(result)    { if (isSandbox) onFinish(result, 'onError'); },
+            onClose: function()          { if (isSandbox) onFinish({}, 'onClose'); }
         });
     }
 
