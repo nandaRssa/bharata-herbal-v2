@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Exclude Midtrans webhook dari CSRF (request datang dari server Midtrans, bukan browser)
         $middleware->validateCsrfTokens(except: [
             'payment/notification',
+            'payment/confirm',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

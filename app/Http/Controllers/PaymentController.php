@@ -38,6 +38,59 @@ class PaymentController extends Controller
     }
 
     /**
+     * Konfirmasi pembayaran dari Snap callback (onSuccess).
+     * POST /payment/confirm
+     * Dipanggil dari JS frontend ketika Snap.onSuccess() fires.
+     * Diverifikasi signature seperti webhook biasa.
+     */
+    public function confirm(Request $request)
+    {
+        try {
+            $payload = $request->all();
+
+            $this->midtrans->handleNotification($payload);
+
+            $transactionStatus = $payload['transaction_status'] ?? '';
+            $fraudStatus       = $payload['fraud_status'] ?? '';
+            $orderNumber       = preg_replace('/-\d+$/', '', $payload['order_id'] ?? '');
+            $transactionId     = $payload['transaction_id'] ?? '';
+
+            $order = Order::where('order_number', $orderNumber)->first();
+
+            if (! $order) {
+                return response()->json(['status' => 'order_not_found'], 404);
+            }
+
+            if ($order->payment_status === 'confirmed') {
+                return response()->json(['status' => 'already_confirmed']);
+            }
+
+            $paymentStatus = $this->midtrans->resolvePaymentStatus($transactionStatus, $fraudStatus);
+
+            $updateData = [
+                'payment_status'          => $paymentStatus,
+                'midtrans_transaction_id' => $transactionId,
+            ];
+
+            if ($paymentStatus === 'confirmed' && $order->order_status === 'new') {
+                $updateData['order_status'] = 'processing';
+            }
+
+            $order->update($updateData);
+
+            Log::info('Midtrans Confirm (onSuccess)', [
+                'order_number' => $orderNumber,
+                'status'       => $paymentStatus,
+            ]);
+
+            return response()->json(['status' => 'ok', 'payment_status' => $paymentStatus]);
+        } catch (\Exception $e) {
+            Log::error('Midtrans Confirm Error', ['error' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()], 403);
+        }
+    }
+
+    /**
      * Handle webhook notifikasi dari Midtrans.
      * POST /payment/notification
      * Dikecualikan dari CSRF.

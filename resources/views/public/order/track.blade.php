@@ -250,8 +250,24 @@
     function payWithSnapToken(token) {
         window.snap.pay(token, {
             onSuccess: function(result) {
-                alert('✅ Pembayaran berhasil! Terima kasih.');
-                window.location.reload();
+                fetch('{{ route("payment.confirm") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(result)
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.status === 'ok') {
+                        alert('✅ Pembayaran berhasil! Terima kasih.');
+                    } else {
+                        alert('✅ Pembayaran berhasil. Tunggu konfirmasi...');
+                    }
+                    window.location.reload();
+                })
+                .catch(function() {
+                    alert('✅ Pembayaran berhasil! Terima kasih.');
+                    window.location.reload();
+                });
             },
             onPending: function(result) {
                 alert('⏳ Pembayaran sedang diproses. Cek aplikasi Anda.');

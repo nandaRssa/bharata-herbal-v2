@@ -46,6 +46,7 @@ Route::post('/riwayat-pesanan', [OrderTrackingController::class, 'historyCheck']
 // Payment (Midtrans)
 // Catatan: route /payment/notification dikecualikan dari CSRF via bootstrap/app.php
 Route::post('/payment/notification', [PaymentController::class, 'notification'])->name('payment.notification');
+Route::post('/payment/confirm', [PaymentController::class, 'confirm'])->name('payment.confirm');
 Route::get('/pesanan/{order}/snap-token', [PaymentController::class, 'getSnapToken'])->name('payment.snap-token');
 // ===================== AUTH ROUTES =====================
 require __DIR__.'/auth.php';
