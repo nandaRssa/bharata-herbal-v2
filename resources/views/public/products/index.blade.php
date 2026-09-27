@@ -1,122 +1,619 @@
 @extends('layouts.public')
-@section('title', 'Produk Herbal')
+@section('title', 'Katalog Produk')
+
+@push('styles')
+<style>
+/* ── Page Hero (Clean Solid) ────────────────────────────────── */
+.catalog-hero {
+    background: #0D2618;
+    padding: 100px 20px 70px;
+    text-align: center;
+    position: relative;
+}
+.catalog-hero-badge {
+    display: inline-block;
+    background: rgba(168, 221, 191, 0.12);
+    color: #A8DDBF;
+    border: 1px solid rgba(168, 221, 191, 0.25);
+    border-radius: 50px;
+    padding: 6px 22px;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 20px;
+}
+.catalog-hero-title {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 1.18;
+    margin-bottom: 0;
+}
+.catalog-hero-title .hero-gold {
+    color: #A8DDBF;
+}
+.catalog-hero-divider {
+    width: 60px; height: 3px;
+    background: #A8DDBF;
+    border-radius: 2px;
+    margin: 18px auto;
+}
+.catalog-hero-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: #D1E5DB;
+    max-width: 650px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+/* ── Catalog Content ─────────────────────────────────────────── */
+.catalog-content {
+    background: #F8FAF7;
+    padding: 50px 0 70px;
+}
+
+/* â”€â”€ Search Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.search-container {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 600px;
+    margin: 0 auto 48px auto;
+    background: #FFFFFF;
+    border: 2px solid #D4DCD6;
+    border-radius: 60px;
+    padding: 4px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+.search-container:focus-within {
+    border-color: #0D2618;
+    box-shadow: 0 8px 40px rgba(13, 38, 24, 0.10);
+}
+.search-input-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    min-width: 120px;
+}
+.search-input-wrap input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 14px 24px;
+    color: #0D2618;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    outline: none;
+    min-width: 60px;
+}
+.search-input-wrap input::placeholder {
+    color: #8A9A92;
+    font-style: italic;
+}
+.search-container button {
+    background: linear-gradient(135deg, #0D2618, #0D2618);
+    border: none;
+    border-radius: 50px;
+    padding: 12px 32px;
+    color: #FFFFFF;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.search-container button:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 30px rgba(13, 38, 24, 0.25);
+}
+.search-container .btn-reset {
+    background: transparent;
+    color: #8A9A92;
+    padding: 12px 16px;
+    font-weight: 500;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+.search-container .btn-reset:hover {
+    color: #0D2618;
+    transform: none;
+    box-shadow: none;
+}
+
+/* â”€â”€ Product Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 0 4px;
+}
+.product-card {
+    background: #FFFFFF;
+    border: 1px solid #E0E6E2;
+    border-radius: 12px;
+    padding: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 220px;
+    text-decoration: none;
+}
+.product-card:hover {
+    transform: translateY(-4px);
+    border-color: #0D2618;
+    box-shadow: 0 8px 30px rgba(13, 38, 24, 0.08);
+}
+
+.product-image {
+    aspect-ratio: 1/1;
+    background: #F5F0EB;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+.product-card:hover .product-image img {
+    transform: scale(1.08);
+}
+.product-image .fallback-icon {
+    font-size: 3rem;
+    color: #8A9A92;
+    opacity: 0.5;
+}
+.badge-discount {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: linear-gradient(135deg, #0D2618, #0D2618);
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 0.6rem;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-family: 'Inter', sans-serif;
+}
+.product-name {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #0D2618;
+    margin: 8px 0 4px 0;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.4rem;
+}
+.product-benefits {
+    margin: 4px 0 8px 0;
+    flex: 1;
+}
+.product-benefits li {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.65rem;
+    color: #6A7A72;
+    list-style: none;
+    padding: 1px 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.product-benefits li::before {
+    content: '\2713';
+    color: #0D2618;
+    font-weight: 700;
+    font-size: 0.6rem;
+}
+.product-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin: 2px 0 6px;
+    min-height: 0;
+}
+.product-rating .stars { display: flex; align-items: center; gap: 1px; }
+.product-rating .stars i { font-size: 0.6rem; }
+.product-rating .stars .fa-star,
+.product-rating .stars .fa-star-half-alt { color: #C9A227; }
+.product-rating .stars .far.fa-star { color: #D4DCD6; }
+.product-rating .rating-value {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #0D2618;
+}
+.product-rating .rating-separator { color: #D4DCD6; font-size: 0.5rem; }
+.product-rating .rating-sold {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.6rem;
+    color: #6A7A72;
+}
+.product-price-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid #E8ECEA;
+}
+.product-prices {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+}
+.product-price-old {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.65rem;
+    color: #8A9A92;
+    text-decoration: line-through;
+}
+.product-price {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #0D2618;
+}
+.product-arrow {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #D4DCD6;
+    border-radius: 50%;
+    background: transparent;
+    color: #0D2618;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+    text-decoration: none;
+}
+.product-arrow:hover {
+    background: linear-gradient(135deg, #0D2618, #0D2618);
+    color: #FFFFFF;
+    border-color: #0D2618;
+    transform: scale(1.05);
+}
+
+/* â”€â”€ Empty State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 0;
+    color: #6A7A72;
+}
+.empty-state i {
+    font-size: 2.5rem;
+    color: #0D2618;
+    margin-bottom: 16px;
+    display: block;
+}
+.empty-state h3 {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-size: 1.3rem;
+    color: #0D2618;
+    margin-bottom: 8px;
+}
+.empty-state p {
+    font-size: 0.9rem;
+    color: #8A9A92;
+}
+
+/* â”€â”€ Pagination â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.pagination-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid #E0E6E2;
+}
+.pagination-info {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    color: #6A7A72;
+}
+.pagination-numbers {
+    display: flex;
+    gap: 8px;
+}
+.pagination-numbers a,
+.pagination-numbers span {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #D4DCD6;
+    border-radius: 8px;
+    background: #FFFFFF;
+    color: #0D2618;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+.pagination-numbers a:hover {
+    border-color: #0D2618;
+    color: #0D2618;
+}
+.pagination-numbers span.active {
+    background: linear-gradient(135deg, #0D2618, #0D2618);
+    color: #FFFFFF;
+    border-color: #0D2618;
+}
+.pagination-numbers .nav-btn {
+    background: transparent;
+    border: none;
+    color: #6A7A72;
+    width: auto;
+    padding: 0 8px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+.pagination-numbers .nav-btn:hover {
+    color: #0D2618;
+}
+
+/* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@media (max-width: 768px) {
+    .catalog-hero { padding: 90px 20px 70px; }
+    .catalog-hero::after { height: 40px; }
+    .catalog-hero-leaf { display: none; }
+    .search-container { border-radius: 20px; padding: 8px; margin-left: 16px; margin-right: 16px; }
+    .search-input-wrap { width: 100%; }
+    .search-input-wrap input { padding: 12px 16px; }
+    .search-container button { justify-content: center; padding: 10px 24px; width: 100%; }
+    .search-container .btn-reset { padding: 12px 12px; }
+    .product-grid { gap: 10px; }
+    .product-card { padding: 10px; min-height: 180px; }
+    .product-card .product-name { font-size: 0.75rem; min-height: 2rem; }
+    .product-card .product-price { font-size: 0.8rem; }
+    .product-card .product-price-old { font-size: 0.6rem; }
+    .product-card .product-benefits { display: none; }
+    .product-card .badge-discount { font-size: 0.5rem; padding: 2px 8px; top: 4px; right: 4px; }
+    .product-card .product-arrow { width: 24px; height: 24px; font-size: 0.6rem; }
+    .product-card .product-price-wrapper { padding-top: 6px; }
+    .product-card .product-rating .stars i { font-size: 0.5rem; }
+    .product-card .product-rating .rating-value { font-size: 0.6rem; }
+    .product-card .product-rating .rating-sold { font-size: 0.5rem; }
+}
+@media (min-width: 768px) {
+    .product-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .product-card { padding: 14px; min-height: 240px; }
+    .product-card .product-name { font-size: 0.9rem; }
+    .product-card .product-price { font-size: 0.95rem; }
+    .product-card .product-benefits li { font-size: 0.7rem; }
+}
+@media (min-width: 1024px) {
+    .product-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .product-card { padding: 16px; min-height: 280px; }
+    .product-card .product-name { font-size: 1rem; }
+    .product-card .product-price { font-size: 1.05rem; }
+    .product-card .product-benefits li { font-size: 0.75rem; }
+    .product-card .product-rating .stars i { font-size: 0.7rem; }
+    .product-card .product-rating .rating-value { font-size: 0.75rem; }
+    .product-card .product-rating .rating-sold { font-size: 0.65rem; }
+}
+@media (min-width: 1280px) {
+    .product-grid { gap: 24px; }
+    .product-card { padding: 20px; }
+}
+@media (max-width: 480px) {
+    .search-container button span { display: none; }
+    .search-container button { padding: 12px 16px; }
+}
+
+/* â”€â”€ Fade-up Animation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+</style>
+@endpush
 
 @section('content')
-<!-- Header Halaman -->
-<div class="relative py-28 overflow-hidden bg-white border-b border-slate-100">
-    <!-- Abstract blurred shapes for background -->
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-tr from-emerald-50 to-emerald-100 rounded-full blur-3xl opacity-60 pointer-events-none -translate-y-1/2"></div>
-    <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M54.627 0l.83.83v58.34l-.83.83H5.373l-.83-.83V.83l.83-.83h49.254zM53.5 2.127H6.5v55.746h47V2.127z\' fill=\'%23008060\' fill-opacity=\'0.02\' fill-rule=\'evenodd\'/%3E%3C/svg%3E')]"></div>
-    
-    <div class="relative z-10 max-w-4xl mx-auto px-4 text-center">
-        <!-- Badge -->
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold mb-6 tracking-wide shadow-sm" style="background-color: var(--primary-light); color: var(--primary);">
-            <div class="w-1.5 h-1.5 rounded-full" style="background-color: var(--primary);"></div>
+
+<!-- ── Page Hero ────────────────────────────────────────────────── -->
+<section class="catalog-hero">
+    <div style="position:relative; z-index:2; max-width:800px; margin:0 auto;">
+        <span class="catalog-hero-badge">
+            <i class="fas fa-store" style="font-size:10px; margin-right:6px;"></i>
             Katalog Produk
-        </div>
-        
-        <!-- Heading -->
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight mb-6">
-            Temukan Produk Herbal Sesuai Kebutuhan Anda
+        </span>
+        <h1 class="catalog-hero-title">
+            Katalog <span class="hero-gold">Produk Herbal</span>
         </h1>
-        
-        <!-- Description -->
-        <p class="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+        <div class="catalog-hero-divider"></div>
+        <p class="catalog-hero-desc">
             Berbagai pilihan produk herbal berkualitas untuk mendukung kesehatan, kebugaran, dan kesejahteraan Anda setiap hari.
         </p>
     </div>
-</div>
+</section>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <!-- Search Bar -->
-    <div class="bg-white rounded-2xl shadow-sm p-6 mb-12 border border-gray-100/70">
-        <form method="GET" action="{{ route('products.index') }}" class="flex flex-col sm:flex-row gap-4">
-            <div class="flex-1 relative flex items-center">
-                <span class="absolute left-4 text-emerald-800/50">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                </span>
-                <input type="text" name="search" placeholder="Cari produk herbal unggulan kami..." value="{{ request('search') }}"
-                    class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600/10 focus:border-emerald-700/30 text-slate-700 font-medium transition duration-200">
-            </div>
-            <button type="submit" class="px-8 py-3.5 rounded-xl font-bold text-white transition duration-200 shadow-md hover:shadow-lg" style="background: var(--primary);">
-                Cari Produk
-            </button>
-            @if(request('search'))
-                <a href="{{ route('products.index') }}" class="px-6 py-3.5 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition duration-200 text-center flex items-center justify-center">
-                    Reset
+<!-- â”€â”€ Catalog Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<section class="catalog-content" id="catalog-content">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Search Bar -->
+        <form method="GET" action="{{ route('products.index') }}" class="search-container" onsubmit="sessionStorage.setItem('scrollY', window.scrollY)">
+            <div class="search-input-wrap">
+                <input type="text" name="search" placeholder="Cari produk herbal..." value="{{ request('search') }}" autocomplete="off">
+                @if(request('search'))
+                <a href="{{ route('products.index') }}" class="btn-reset" onclick="sessionStorage.setItem('scrollY', window.scrollY)">
+                    <i class="fas fa-times"></i>
                 </a>
-            @endif
-        </form>
-    </div>
-
-    <!-- Hasil Produk -->
-    @if($products->isEmpty())
-    <div class="text-center py-24 bg-white rounded-2xl border border-dashed border-gray-200">
-        <div class="text-6xl mb-4">🌿</div>
-        <h3 class="text-2xl font-bold text-slate-700">Produk Tidak Ditemukan</h3>
-        <p class="text-slate-400 mt-2 max-w-xs mx-auto">Silakan coba menggunakan kata kunci pencarian yang lain.</p>
-        <a href="{{ route('products.index') }}" class="mt-6 inline-block px-6 py-2.5 rounded-lg text-sm font-bold text-white shadow-sm" style="background: var(--primary);">Reset Katalog</a>
-    </div>
-    @else
-        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        @foreach($products as $product)
-        <a href="{{ route('products.show', $product->slug) }}" class="group flex flex-col h-full bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-slate-100 transition-all duration-300 transform hover:-translate-y-1">
-            <!-- Image Section -->
-            <div class="relative overflow-hidden flex-shrink-0 aspect-square bg-slate-50">
-                @if($product->images->isNotEmpty())
-                <img src="{{ asset('storage/' . ($product->images->where('is_primary', true)->first() ?? $product->images->first())->image_path) }}"
-                     alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
-                @else
-                <div class="w-full h-full flex items-center justify-center text-6xl opacity-30">🌿</div>
                 @endif
-                @if($product->discounted_price)
-                <div class="absolute top-3 left-3 bg-rose-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow-md z-10">
-                    -{{ $product->discount_percentage }}%
-                </div>
-                @endif
-                <div class="absolute inset-0 bg-emerald-900/0 group-hover:bg-emerald-900/5 transition duration-300"></div>
             </div>
-            
-            <div class="p-5 flex flex-col flex-grow">
-                <!-- Product Name -->
-                <h3 class="font-bold text-lg leading-snug line-clamp-2 text-slate-800 group-hover:text-emerald-700 transition duration-200 mb-2">
-                    {{ $product->name }}
-                </h3>
-                
-                <!-- Benefits -->
-                @if($product->benefits)
-                <div class="flex flex-wrap gap-1.5 mb-4">
-                    @foreach(array_slice($product->benefits, 0, 2) as $benefit)
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-100 uppercase tracking-wide">{{ $benefit }}</span>
-                    @endforeach
+            <button type="submit">
+                <i class="fas fa-search"></i>
+                <span>Cari</span>
+            </button>
+        </form>
+
+        <!-- Product Grid -->
+        @if($products->isEmpty())
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <h3>Produk Tidak Ditemukan</h3>
+            <p>Coba gunakan kata kunci pencarian yang lain.</p>
+        </div>
+        @else
+        <div class="product-grid">
+            @foreach($products as $i => $product)
+            <a href="{{ route('products.show', $product->slug) }}" class="product-card fade-up" style="transition-delay:{{ min($i, 7) * 0.06 }}s">
+                <div class="product-image">
+                    @if($product->images->isNotEmpty())
+                    <img src="{{ $product->primary_image_url }}" alt="{{ $product->name }}">
+                    @else
+                    <i class="fas fa-leaf fallback-icon"></i>
+                    @endif
+                    @if($product->discounted_price)
+                    <span class="badge-discount">-{{ $product->discount_percentage }}%</span>
+                    @endif
                 </div>
+
+                <h3 class="product-name">{{ $product->name }}</h3>
+
+                <div class="product-rating">
+                    @if($product->rating)
+                    <div class="stars">
+                        @include('partials.product-stars', ['rating' => $product->rating])
+                    </div>
+                    <span class="rating-value">{{ number_format($product->rating, 1) }}</span>
+                    @endif
+                    @if($product->rating && $product->sales_count > 0)
+                    <span class="rating-separator">Â·</span>
+                    @endif
+                    @if($product->sales_count > 0)
+                    <span class="rating-sold">{{ $product->sales_count }}+ terjual</span>
+                    @endif
+                </div>
+
+                @if($product->benefits)
+                <ul class="product-benefits">
+                    @foreach(array_slice($product->benefits, 0, 3) as $benefit)
+                    <li>{{ $benefit }}</li>
+                    @endforeach
+                </ul>
+                @else
+                <ul class="product-benefits"><li style="color:#D4DCD6;font-size:0.7rem;">&nbsp;</li></ul>
                 @endif
-                
-                <!-- Price & CTA Action -->
-                <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
-                    <div>
+
+                <div class="product-price-wrapper">
+                    <div class="product-prices">
                         @if($product->discounted_price)
-                        <div class="text-lg font-extrabold" style="color: var(--primary);">{{ $product->formatted_discounted_price }}</div>
-                        <div class="text-xs text-slate-400 line-through font-medium">{{ $product->formatted_price }}</div>
+                        <span class="product-price-old">{{ $product->formatted_price }}</span>
+                        <span class="product-price">{{ $product->formatted_discounted_price }}</span>
                         @else
-                        <div class="font-extrabold text-lg text-emerald-600">{{ $product->formatted_price }}</div>
+                        <span class="product-price">{{ $product->formatted_price }}</span>
                         @endif
                     </div>
-                    <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition duration-300">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                    </div>
+                    <span class="product-arrow">
+                        <i class="fas fa-arrow-right" style="font-size:14px;"></i>
+                    </span>
                 </div>
-            </div>
-        </a>
-        @endforeach
-    </div>
+            </a>
+            @endforeach
+        </div>
 
-    <!-- Pagination -->
-    <div class="mt-16 border-t border-gray-100 pt-8">
-        {{ $products->links() }}
+        <!-- Pagination -->
+        <div class="pagination-container fade-up">
+            <div class="pagination-info">
+                Menampilkan {{ $products->firstItem() }}&ndash;{{ $products->lastItem() }} dari {{ $products->total() }} produk
+            </div>
+            <div class="pagination-numbers">
+                @if($products->onFirstPage())
+                <span class="nav-btn" style="opacity:0.4"><i class="fas fa-chevron-left"></i></span>
+                @else
+                <a href="{{ $products->previousPageUrl() }}" class="nav-btn"><i class="fas fa-chevron-left"></i></a>
+                @endif
+
+                @foreach($products->getUrlRange(1, $products->lastPage()) as $page => $url)
+                    @if($page == $products->currentPage())
+                    <span class="active">{{ $page }}</span>
+                    @else
+                    <a href="{{ $url }}">{{ $page }}</a>
+                    @endif
+                @endforeach
+
+                @if($products->hasMorePages())
+                <a href="{{ $products->nextPageUrl() }}" class="nav-btn"><i class="fas fa-chevron-right"></i></a>
+                @else
+                <span class="nav-btn" style="opacity:0.4"><i class="fas fa-chevron-right"></i></span>
+                @endif
+            </div>
+        </div>
+        @endif
     </div>
-    @endif
-</div>
+</section>
+
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    /* â”€â”€ Scroll Reveal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    var revealElements = document.querySelectorAll('.fade-up');
+    if (revealElements.length > 0 && 'IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0, rootMargin: '80px 0px 80px 0px' });
+        revealElements.forEach(function(el) { observer.observe(el); });
+    } else {
+        revealElements.forEach(function(el) { el.classList.add('visible'); });
+    }
+    // Fallback: mark visible after 300ms if still hidden
+    setTimeout(function() {
+        revealElements.forEach(function(el) {
+            if (!el.classList.contains('visible')) {
+                el.classList.add('visible');
+            }
+        });
+    }, 300);
+
+    /* Scroll logic: restore position when search/filter reloads */
+    var savedY = sessionStorage.getItem('scrollY');
+    if (savedY !== null) {
+        window.scrollTo(0, parseInt(savedY));
+        sessionStorage.removeItem('scrollY');
+    }
+});
+</script>
+@endpush

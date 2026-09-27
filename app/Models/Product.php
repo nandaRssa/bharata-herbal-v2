@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
@@ -53,6 +54,11 @@ class Product extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class)->where('is_visible', true);
+    }
+
     public function stockLogs(): HasMany
     {
         return $this->hasMany(StockLog::class);
@@ -68,6 +74,19 @@ class Product extends Model
     public function getFormattedPriceAttribute(): string
     {
         return 'Rp ' . number_format($this->price, 0, ',', '.');
+    }
+
+    public function getSalesCountAttribute(): int
+    {
+        return (int) ($this->attributes['sales_count'] ?? $this->orderItems()
+            ->whereHas('order', fn($q) => $q->where('order_status', 'delivered'))
+            ->sum('quantity'));
+    }
+
+    public function getRatingAttribute(): ?float
+    {
+        $rating = $this->attributes['reviews_avg_rating'] ?? null;
+        return $rating ? round((float) $rating, 1) : null;
     }
 
     public function getDiscountedPriceAttribute(): ?int

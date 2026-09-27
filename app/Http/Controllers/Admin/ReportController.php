@@ -19,11 +19,13 @@ class ReportController extends Controller
 
         $query->whereBetween('created_at', [$start . ' 00:00:00', $end . ' 23:59:59']);
 
-        $orders       = $query->get();
-        $totalOrders  = $orders->count();
-        $totalRevenue = $orders->where('payment_status', 'confirmed')->sum('total_amount');
+        $orders           = $query->get();
+        $totalOrders      = $orders->count();
+        $totalRevenue     = $orders->where('payment_status', 'confirmed')->sum('total_amount');
+        $confirmedOrders  = $orders->where('payment_status', 'confirmed')->count();
+        $averagePerOrder  = $totalOrders > 0 ? (int) round($totalRevenue / $totalOrders) : 0;
 
-        return view('admin.reports.index', compact('orders', 'totalOrders', 'totalRevenue', 'start', 'end'));
+        return view('admin.reports.index', compact('orders', 'totalOrders', 'totalRevenue', 'confirmedOrders', 'averagePerOrder', 'start', 'end'));
     }
 
     public function exportExcel(Request $request)

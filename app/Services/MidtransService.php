@@ -37,7 +37,7 @@ class MidtransService
             'item_details' => $this->buildItemDetails($order),
         ];
 
-        // Expiry 24 jam — Midtrans akan auto-cancel setelah waktu habis
+        // Expiry 24 jam â€” Midtrans akan auto-cancel setelah waktu habis
         $params['expiry'] = [
             'start_time' => date('Y-m-d H:i:s O'),
             'unit'       => 'day',
@@ -139,3 +139,4 @@ class MidtransService
         };
     }
 }
+

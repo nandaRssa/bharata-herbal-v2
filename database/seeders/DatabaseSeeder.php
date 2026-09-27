@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
             ['id' => 1],
             [
                 'store_name' => 'Bharata Herbal ID',
-                'wa_number' => '6281234567890',
+                'wa_number' => '6282244664526',
                 'store_address' => 'Jl. Herbal Nusantara No. 8, Jakarta Pusat',
                 'operating_hours' => 'Senin - Sabtu (08.00 - 17.00)',
             ]
@@ -222,7 +222,38 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($products as $p) {
-            Product::updateOrCreate(['name' => $p['name']], $p);
+            $product = Product::updateOrCreate(['name' => $p['name']], $p);
+        }
+
+        // 4. Buat Product Images berdasarkan kategori
+        $imageMap = [
+            'Channamax Bharata'       => 'herbal_capsule.png',
+            'Cordymax Bharata'        => 'herbal_capsule.png',
+            'Minyak Sapu Jagat'       => 'herbal_oil.png',
+            'Teh Daun Kelor Premium'  => 'herbal_tea.png',
+            'Verdilla Bharata'        => 'herbal_capsule.png',
+            'Vellare Bharata'         => 'herbal_capsule.png',
+            'Orthafit Bharata'        => 'herbal_capsule.png',
+            'Dekapro Bharata'         => 'herbal_capsule.png',
+            'Gerdafost Bharata'       => 'herbal_capsule.png',
+            'Remafost Bharata'        => 'herbal_capsule.png',
+            'Galrida Bharata'         => 'herbal_capsule.png',
+            'Libaver Bharata'         => 'herbal_capsule.png',
+            'Antapro Bharata'         => 'herbal_capsule.png',
+            'Triganos Bharata'        => 'herbal_capsule.png',
+            'Glucacare Bharata'       => 'herbal_capsule.png',
+            'Femmifresh Bharata'      => 'herbal_capsule.png',
+            'Cordepro Bharata'        => 'herbal_capsule.png',
+        ];
+
+        foreach ($imageMap as $name => $img) {
+            $product = Product::where('name', $name)->first();
+            if ($product) {
+                $product->images()->updateOrCreate(
+                    ['is_primary' => true],
+                    ['image_path' => 'products/' . $img, 'sort_order' => 0]
+                );
+            }
         }
 
     }

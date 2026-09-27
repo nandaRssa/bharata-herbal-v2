@@ -19,7 +19,7 @@
             --primary-dark:  #0a2216;
             --primary:       #1C4526;
             --primary-light: #2c633a;
-            --gold:          #c5a059;
+            --gold:          #0D2618;
             --cream:         #faf8f5;
         }
         body {
@@ -40,23 +40,23 @@
         <div class="absolute -top-32 -left-32 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl pointer-events-none translate-x-1/3 translate-y-1/3"></div>
 
-        <!-- Top Logo -->
-        <a href="/" class="relative z-10 flex items-center gap-4 group w-max">
-            <div class="w-14 h-14 rounded-full flex items-center justify-center bg-white/10 backdrop-blur-md border border-white/20 transition-transform duration-300 group-hover:scale-105">
-                <span class="text-white font-bold text-2xl font-serif-elegant">B</span>
-            </div>
-            <div>
-                <div class="font-bold text-2xl text-white tracking-wide font-serif-elegant leading-none">Bharata Herbal</div>
-                <div class="text-[10px] tracking-widest uppercase font-medium text-emerald-200 mt-1">Premium Wellness</div>
-            </div>
-        </a>
-
-        <!-- Main Illustration/Text -->
-        <div class="relative z-10 max-w-lg mt-auto mb-16">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 backdrop-blur-sm text-xs font-bold text-white mb-6">
+        <!-- Top: Logo + Sistem Terenkripsi -->
+        <div class="relative z-10">
+            <a href="/" class="flex items-center gap-4 group w-max mb-8">
+                <img src="{{ asset('images/logo.png') }}" alt="Bharata Herbal" class="w-16 h-16 rounded-full object-contain bg-white/10 backdrop-blur-md border border-white/20 transition-transform duration-300 group-hover:scale-105">
+                <div>
+                    <div class="font-bold text-2xl text-white tracking-wide font-serif-elegant leading-none">Bharata Herbal</div>
+                    <div class="text-[10px] tracking-widest uppercase font-medium text-emerald-200 mt-1">Premium Wellness</div>
+                </div>
+            </a>
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 backdrop-blur-sm text-xs font-bold text-white">
                 <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
                 Sistem Terenkripsi
             </div>
+        </div>
+
+        <!-- Middle: Heading + Paragraph -->
+        <div class="relative z-10 max-w-lg">
             <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 font-serif-elegant leading-tight">
                 Kearifan Alam <br>Nusantara.
             </h1>
@@ -75,9 +75,7 @@
     <div class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative bg-white lg:bg-slate-50/50">
         <!-- Mobile Logo (visible only on mobile) -->
         <div class="absolute top-8 left-8 lg:hidden flex items-center gap-3">
-             <div class="w-10 h-10 rounded-full flex items-center justify-center bg-emerald-50 border border-emerald-100 text-emerald-800">
-                <span class="font-bold text-lg font-serif-elegant">B</span>
-            </div>
+             <img src="{{ asset('images/logo.png') }}" alt="Bharata Herbal" class="w-12 h-12 rounded-full object-contain bg-emerald-50 border border-emerald-100">
             <div class="font-bold text-xl text-emerald-900 tracking-wide font-serif-elegant">Bharata Herbal</div>
         </div>
 

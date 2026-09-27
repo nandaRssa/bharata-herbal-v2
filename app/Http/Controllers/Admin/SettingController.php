@@ -24,10 +24,13 @@ class SettingController extends Controller
     {
         $request->validate([
             'store_name'      => 'required|string|max:255',
-            'wa_number'       => 'nullable|string|max:20',
+            'wa_number'       => ['nullable', 'regex:/^[0-9+\-\s]+$/', 'max:20'],
             'store_address'   => 'nullable|string',
             'operating_hours' => 'nullable|string|max:255',
             'qris_image'      => 'nullable|image|max:2048',
+        ], [
+            'wa_number.regex' => 'Nomor WhatsApp hanya boleh berisi angka, spasi, tanda plus, atau tanda minus.',
+            'wa_number.max' => 'Nomor WhatsApp maksimal 20 karakter.',
         ]);
 
         $settings = StoreSetting::getInstance();
@@ -41,6 +44,9 @@ class SettingController extends Controller
                 Storage::disk('public')->delete($settings->qris_image);
             }
             $data['qris_image'] = $request->file('qris_image')->store('settings', 'public');
+        } elseif ($request->has('delete_qris') && $settings->qris_image) {
+            Storage::disk('public')->delete($settings->qris_image);
+            $data['qris_image'] = null;
         }
 
         // Handle payment methods toggle

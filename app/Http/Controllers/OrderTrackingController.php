@@ -51,7 +51,11 @@ class OrderTrackingController extends Controller
     public function verify(Request $request, string $orderNumber)
     {
         $request->validate([
-            'phone' => 'required|string',
+            'phone' => ['required', 'regex:/^[0-9+\-\s]+$/', 'min:8', 'max:20'],
+        ], [
+            'phone.regex' => 'Nomor HP hanya boleh berisi angka, spasi, tanda plus, atau tanda minus.',
+            'phone.min' => 'Nomor HP minimal 8 karakter.',
+            'phone.max' => 'Nomor HP maksimal 20 karakter.',
         ]);
 
         $order = Order::with(['items.product.images'])
@@ -111,6 +115,24 @@ class OrderTrackingController extends Controller
 
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
 
+        // Verifikasi kepemilikan order via session (sama seperti verify())
+        // Mencegah siapapun yang tahu nomor order bisa submit ulasan palsu
+        $verifiedPhone = session('verified_phone');
+        $orderPhone    = ltrim(preg_replace('/[^0-9]/', '', $order->customer_phone), '0');
+
+        if (! $verifiedPhone || $verifiedPhone !== $orderPhone) {
+            return redirect()
+                ->route('order.track.show', $orderNumber)
+                ->withErrors(['auth' => 'Silakan verifikasi nomor HP Anda terlebih dahulu sebelum memberikan ulasan.']);
+        }
+
+        // Hanya order yang sudah delivered yang bisa direview
+        if ($order->order_status !== 'delivered') {
+            return redirect()
+                ->route('order.track.show', $orderNumber)
+                ->withErrors(['auth' => 'Ulasan hanya bisa diberikan setelah pesanan selesai diterima.']);
+        }
+
         // Prevent duplicate reviews
         $already = Review::where('order_id', $order->id)
             ->where('product_id', $request->product_id)
@@ -129,7 +151,7 @@ class OrderTrackingController extends Controller
 
         return redirect()
             ->route('order.track.show', $orderNumber)
-            ->with('success', 'Terima kasih atas ulasan Anda! 🌿');
+            ->with('success', 'Terima kasih atas ulasan Anda.');
     }
 
     // ────────────────────────────────────────────────────────────────
@@ -138,11 +160,11 @@ class OrderTrackingController extends Controller
         $status = $order->order_status;
 
         $allSteps = [
-            ['key' => 'new',        'label' => 'Menunggu Konfirmasi',   'icon' => '⏳'],
-            ['key' => 'processing', 'label' => 'Diproses',              'icon' => '⚙️'],
-            ['key' => 'packing',    'label' => 'Sedang Dikemas',        'icon' => '📦'],
-            ['key' => 'shipped',    'label' => 'Sedang Dikirim',        'icon' => '🚚'],
-            ['key' => 'delivered',  'label' => 'Selesai',               'icon' => '✅'],
+            ['key' => 'new',        'label' => 'Menunggu Konfirmasi',   'icon' => 'clock-pending'],
+            ['key' => 'processing', 'label' => 'Diproses',              'icon' => 'settings'],
+            ['key' => 'packing',    'label' => 'Sedang Dikemas',        'icon' => 'package'],
+            ['key' => 'shipped',    'label' => 'Sedang Dikirim',        'icon' => 'shipping'],
+            ['key' => 'delivered',  'label' => 'Selesai',               'icon' => 'check'],
         ];
 
         $order_sequence = ['new', 'processing', 'packing', 'shipped', 'delivered'];
@@ -182,7 +204,11 @@ class OrderTrackingController extends Controller
     public function historyCheck(Request $request)
     {
         $request->validate([
-            'phone' => 'required|string|min:8',
+            'phone' => ['required', 'regex:/^[0-9+\-\s]+$/', 'min:8', 'max:20'],
+        ], [
+            'phone.regex' => 'Nomor HP hanya boleh berisi angka, spasi, tanda plus, atau tanda minus.',
+            'phone.min' => 'Nomor HP minimal 8 karakter.',
+            'phone.max' => 'Nomor HP maksimal 20 karakter.',
         ]);
 
         $inputPhone = preg_replace('/[^0-9]/', '', $request->phone);
@@ -191,9 +217,15 @@ class OrderTrackingController extends Controller
         // Simpan nomor HP yang sudah diverifikasi di session
         session(['verified_phone' => $inputNorm]);
 
+        // Cari pesanan berdasarkan nomor HP (dengan/tanpa kode negara)
+        // Gunakan LIMIT 50 untuk mencegah full table scan tak terbatas (DoS)
         $orders = Order::with('items.product')
-            ->where('customer_phone', 'LIKE', '%' . $inputNorm)
+            ->where(function ($q) use ($inputNorm) {
+                $q->where('customer_phone', 'LIKE', '%' . $inputNorm)
+                  ->orWhere('customer_phone', 'LIKE', '0' . $inputNorm . '%');
+            })
             ->latest()
+            ->limit(50)
             ->get();
 
         return view('public.order.history', [

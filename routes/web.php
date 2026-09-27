@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ReviewAdminController;
+use App\Http\Controllers\Admin\SecurityController;
 
 // ===================== PUBLIC ROUTES =====================
 Route::get('/', [PublicController::class, 'home'])->name('home');
@@ -33,21 +34,22 @@ Route::post('/keranjang/hapus', [CartController::class, 'remove'])->name('cart.r
 
 // Orders
 Route::get('/pesan', [OrderController::class, 'form'])->name('order.form');
-Route::post('/pesan', [OrderController::class, 'store'])->name('order.store');
+Route::post('/pesan', [OrderController::class, 'store'])->middleware('throttle:5,1')->name('order.store');
 Route::get('/pesanan/{orderNumber}/sukses', [OrderController::class, 'success'])->name('order.success');
 
 // Order tracking (public, no login)
 Route::get('/pesanan/{orderNumber}/status', [OrderTrackingController::class, 'show'])->name('order.track.show');
-Route::post('/pesanan/{orderNumber}/status', [OrderTrackingController::class, 'verify'])->name('order.track.verify');
-Route::post('/pesanan/{orderNumber}/ulasan', [OrderTrackingController::class, 'submitReview'])->name('order.track.review');
+Route::post('/pesanan/{orderNumber}/status', [OrderTrackingController::class, 'verify'])->middleware('throttle:10,1')->name('order.track.verify');
+Route::post('/pesanan/{orderNumber}/ulasan', [OrderTrackingController::class, 'submitReview'])->middleware('throttle:5,1')->name('order.track.review');
 Route::get('/riwayat-pesanan', [OrderTrackingController::class, 'historyForm'])->name('order.history');
-Route::post('/riwayat-pesanan', [OrderTrackingController::class, 'historyCheck'])->name('order.history.check');
+Route::post('/riwayat-pesanan', [OrderTrackingController::class, 'historyCheck'])->middleware('throttle:10,1')->name('order.history.check');
 
 // Payment (Midtrans)
 // Catatan: route /payment/notification dikecualikan dari CSRF via bootstrap/app.php
-Route::post('/payment/notification', [PaymentController::class, 'notification'])->name('payment.notification');
-Route::post('/payment/confirm', [PaymentController::class, 'confirm'])->name('payment.confirm');
-Route::get('/pesanan/{order}/snap-token', [PaymentController::class, 'getSnapToken'])->name('payment.snap-token');
+// throttle:60,1 — Midtrans server bisa kirim banyak notifikasi, 60x/menit cukup longgar
+Route::post('/payment/notification', [PaymentController::class, 'notification'])->middleware('throttle:60,1')->name('payment.notification');
+Route::post('/payment/confirm', [PaymentController::class, 'confirm'])->middleware('throttle:20,1')->name('payment.confirm');
+Route::get('/pesanan/{order}/snap-token', [PaymentController::class, 'getSnapToken'])->middleware('throttle:10,1')->name('payment.snap-token');
 Route::post('/pesanan/{order}/simulate-success', [PaymentController::class, 'simulateSuccess'])->name('payment.simulate-success');
 // ===================== AUTH ROUTES =====================
 require __DIR__.'/auth.php';
@@ -63,7 +65,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // ===================== ADMIN ROUTES =====================
-Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () {
+Route::prefix('admin')->middleware(['auth', \App\Http\Middleware\AdminOnly::class, 'throttle:60,1'])->name('admin.')->group(function () {
     Route::get('/', fn() => redirect()->route('admin.dashboard'));
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -74,6 +76,7 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     Route::get('/produk/{product}/edit', [ProductAdminController::class, 'edit'])->name('products.edit');
     Route::put('/produk/{product}', [ProductAdminController::class, 'update'])->name('products.update');
     Route::delete('/produk/{product}', [ProductAdminController::class, 'destroy'])->name('products.destroy');
+    Route::post('/produk/bulk-delete', [ProductAdminController::class, 'bulkDestroy'])->name('products.bulk-destroy');
     Route::post('/produk/{product}/toggle', [ProductAdminController::class, 'toggleActive'])->name('products.toggle');
     Route::delete('/produk/gambar/{image}', [ProductAdminController::class, 'deleteImage'])->name('products.image.delete');
 
@@ -94,6 +97,11 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     // Settings
     Route::get('/pengaturan', [SettingController::class, 'index'])->name('settings.index');
     Route::put('/pengaturan', [SettingController::class, 'update'])->name('settings.update');
+
+    // Security & Privacy (Ganti Password & Profil)
+    Route::get('/keamanan', [SecurityController::class, 'index'])->name('security.index');
+    Route::put('/keamanan/profil', [SecurityController::class, 'updateProfile'])->name('security.profile');
+    Route::put('/keamanan/password', [SecurityController::class, 'updatePassword'])->name('security.password');
 
     // Reviews
     Route::get('/ulasan', [ReviewAdminController::class, 'index'])->name('reviews.index');

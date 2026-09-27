@@ -60,17 +60,24 @@ class OrderController extends Controller
     {
         $request->validate([
             'customer_name'      => 'required|string|max:255',
-            'customer_phone'     => 'required|string|max:20',
+            'customer_phone'     => ['required', 'regex:/^[0-9+\-\s]+$/', 'max:20'],
             'address_street'     => 'required|string',
             'address_kecamatan'  => 'required|string|max:100',
             'address_city'       => 'required|string|max:100',
             'address_province'   => 'required|string|max:100',
-            'address_postal'     => 'required|string|max:10',
+            'address_postal'     => ['required', 'regex:/^[0-9]{5,10}$/'],
             'shipping_method'    => 'required|string',
             'payment_method'     => 'required|string',
             'items'              => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity'   => 'required|integer|min:1',
+            'shipping_cost'      => ['nullable', 'integer', 'min:0', 'regex:/^[0-9]+$/'],
+            'items.*.quantity'   => ['required', 'integer', 'min:1', 'regex:/^[0-9]+$/'],
+        ], [
+            'customer_phone.regex' => 'Nomor WhatsApp hanya boleh berisi angka, spasi, tanda plus, atau tanda minus.',
+            'customer_phone.max' => 'Nomor WhatsApp maksimal 20 karakter.',
+            'address_postal.regex' => 'Kode pos harus berupa 5 sampai 10 digit angka.',
+            'shipping_cost.regex' => 'Ongkos kirim harus berupa angka.',
+            'items.*.quantity.regex' => 'Jumlah produk harus berupa angka bulat.',
         ]);
 
         Log::info('Order store request', [
@@ -153,7 +160,11 @@ class OrderController extends Controller
                 ->with('success', 'Pesanan berhasil dibuat!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            Log::error('Order store failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return back()->withInput()->with('error', 'Terjadi kesalahan saat memproses pesanan. Silakan coba lagi atau hubungi kami.');
         }
     }
 

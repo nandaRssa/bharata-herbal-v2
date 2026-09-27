@@ -23,3 +23,27 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HTTP Security Headers
+# ─────────────────────────────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+    # Cegah situs diload dalam iframe dari domain lain (anti-Clickjacking)
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # Cegah browser menebak content-type (anti-MIME sniffing)
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Aktifkan filter XSS bawaan browser (legacy browsers)
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Batasi informasi referrer yang dikirim ke domain lain
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Nonaktifkan akses ke kamera/mikrofon/geolokasi browser
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+
+    # Paksa HTTPS selama 1 tahun (HSTS)
+    # AKTIFKAN hanya setelah domain production sudah pakai HTTPS!
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>

@@ -27,11 +27,8 @@ class Review extends Model
         return $this->belongsTo(Order::class);
     }
 
-    /** Returns filled star HTML string */
     public function getStarsHtmlAttribute(): string
     {
-        $filled = str_repeat('★', $this->rating);
-        $empty  = str_repeat('☆', 5 - $this->rating);
-        return $filled . $empty;
+        return "{$this->rating}/5";
     }
 }

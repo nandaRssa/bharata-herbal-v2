@@ -19,6 +19,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        if (config('app.env') === 'production') {
+            try {
+                $host = request()->getHost();
+                if ($host !== 'localhost' && $host !== '127.0.0.1') {
+                    \Illuminate\Support\Facades\URL::forceScheme('https');
+                }
+            } catch (\Throwable $e) {
+                // If console or no request
+            }
+        }
     }
 }

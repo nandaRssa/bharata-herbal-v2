@@ -22,35 +22,35 @@ class StoreSetting extends Model
     const CREATED_AT = null;
 
     /**
-     * Daftar semua metode pembayaran Midtrans yang tersedia beserta label dan icon-nya.
+     * Daftar semua metode pembayaran Midtrans yang tersedia beserta nama icon lokalnya.
      */
     public static function availablePaymentMethods(): array
     {
         return [
-            'bank_transfer' => ['label' => 'Bank Transfer (Virtual Account)', 'icon' => '🏦', 'via_midtrans' => true, 'group' => 'm_banking', 'midtrans_channel' => 'bank_transfer'],
-            'qris'          => ['label' => 'QRIS',                          'icon' => '📷', 'via_midtrans' => true, 'group' => 'e_wallet', 'midtrans_channel' => 'qris'],
-            'gopay'         => ['label' => 'GoPay',                         'icon' => '💚', 'via_midtrans' => true, 'group' => 'e_wallet', 'midtrans_channel' => 'gopay'],
-            'dana'          => ['label' => 'DANA',                          'icon' => '💙', 'via_midtrans' => true, 'group' => 'e_wallet', 'midtrans_channel' => 'dana'],
-            'ovo'           => ['label' => 'OVO',                           'icon' => '💜', 'via_midtrans' => true, 'group' => 'e_wallet', 'midtrans_channel' => 'ovo'],
-            'brimo'         => ['label' => 'BRImo',                         'icon' => '🔵', 'via_midtrans' => true, 'group' => 'm_banking', 'midtrans_channel' => 'bri_epay'],
-            'cod'           => ['label' => 'COD (Bayar di Tempat)',         'icon' => '🚪', 'via_midtrans' => false, 'group' => 'cod', 'midtrans_channel' => null],
+            'bank_transfer' => ['label' => 'Bank Transfer (Virtual Account)', 'icon' => 'building', 'via_midtrans' => true, 'group' => 'm_banking', 'midtrans_channel' => 'bank_transfer'],
+            'qris'          => ['label' => 'QRIS',                          'icon' => 'image', 'via_midtrans' => true, 'group' => 'e_wallet', 'midtrans_channel' => 'qris'],
+            'gopay'         => ['label' => 'GoPay',                         'icon' => 'wallet', 'via_midtrans' => true, 'group' => 'e_wallet', 'midtrans_channel' => 'gopay'],
+            'dana'          => ['label' => 'DANA',                          'icon' => 'wallet', 'via_midtrans' => true, 'group' => 'e_wallet', 'midtrans_channel' => 'dana'],
+            'ovo'           => ['label' => 'OVO',                           'icon' => 'wallet', 'via_midtrans' => true, 'group' => 'e_wallet', 'midtrans_channel' => 'ovo'],
+            'brimo'         => ['label' => 'BRImo',                         'icon' => 'building', 'via_midtrans' => true, 'group' => 'm_banking', 'midtrans_channel' => 'bri_epay'],
+            'cod'           => ['label' => 'COD (Bayar di Tempat)',         'icon' => 'cash', 'via_midtrans' => false, 'group' => 'cod', 'midtrans_channel' => null],
         ];
     }
 
     /**
      * Default nilai payment_methods ketika belum diset.
-     * Semua diaktifkan secara default.
+     * Hanya Virtual Account (bank_transfer) yang aktif secara default.
      */
     public static function defaultPaymentMethods(): array
     {
         return [
             'bank_transfer' => true,
-            'qris'          => true,
-            'gopay'         => true,
-            'dana'          => true,
-            'ovo'           => true,
-            'brimo'         => true,
-            'cod'           => true,
+            'qris'          => false,
+            'gopay'         => false,
+            'dana'          => false,
+            'ovo'           => false,
+            'brimo'         => false,
+            'cod'           => false,
         ];
     }
 
@@ -64,7 +64,7 @@ class StoreSetting extends Model
         $defaults = static::defaultPaymentMethods();
         $merged   = array_merge($defaults, $saved);
 
-        return array_filter($merged); // hanya yang bernilai true
+        return array_filter($merged);
     }
 
     public static function getInstance(): static
@@ -72,4 +72,3 @@ class StoreSetting extends Model
         return static::firstOrCreate([], ['store_name' => 'Bharata Herbal ID']);
     }
 }
-

@@ -12,16 +12,37 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust proxies (Cloudflare, cPanel reverse proxy, load balancer)
+        // Default '*' agar header HTTPS & client IP terdeteksi dengan benar di hosting
+        $middleware->trustProxies(
+            at: env('TRUSTED_PROXIES', '*')
+        );
+
+        // Setelah login, redirect ke dashboard admin
         $middleware->redirectUsersTo(fn ($request) => route('admin.dashboard'));
 
-        // Exclude Midtrans webhook dari CSRF (request datang dari server Midtrans, bukan browser)
+        // Hanya Midtrans server-to-server webhook yang dikecualikan dari CSRF.
+        // /payment/confirm dipanggil dari frontend JS, jadi WAJIB ada CSRF token.
         $middleware->validateCsrfTokens(except: [
-            'payment/notification',
-            'payment/confirm',
+            'payment/notification',  // Midtrans server-to-server webhook
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        // Menangani sesi / CSRF token kadaluwarsa (419 Page Expired)
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, Request $request) {
+            if ($request->is('logout')) {
+                auth()->guard('web')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return redirect()->route('login')->with('status', 'Anda telah berhasil keluar.');
+            }
+
+            return redirect()->back()
+                ->withInput($request->except(['password', 'password_confirmation', '_token']))
+                ->withErrors(['session_expired' => 'Sesi Anda telah berakhir. Silakan ulangi kembali.']);
+        });
     })->create();

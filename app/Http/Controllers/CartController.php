@@ -17,7 +17,10 @@ class CartController extends Controller
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
+            'quantity' => ['required', 'integer', 'min:1', 'regex:/^[0-9]+$/'],
+        ], [
+            'quantity.regex' => 'Jumlah produk harus berupa angka bulat.',
+            'quantity.integer' => 'Jumlah produk harus berupa angka bulat.',
         ]);
 
         $product = Product::with('images')->findOrFail($request->product_id);
@@ -70,7 +73,10 @@ class CartController extends Controller
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
+            'quantity' => ['required', 'integer', 'min:1', 'regex:/^[0-9]+$/'],
+        ], [
+            'quantity.regex' => 'Jumlah produk harus berupa angka bulat.',
+            'quantity.integer' => 'Jumlah produk harus berupa angka bulat.',
         ]);
 
         $product = Product::findOrFail($request->product_id);

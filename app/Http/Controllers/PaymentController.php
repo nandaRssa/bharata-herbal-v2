@@ -110,7 +110,7 @@ class PaymentController extends Controller
             'order_status'            => 'processing',
         ]);
 
-        return redirect()->back()->with('success', '✅ Pembayaran berhasil! Pesanan sedang diproses.');
+        return redirect()->back()->with('success', 'Pembayaran berhasil. Pesanan sedang diproses.');
     }
 
     /**

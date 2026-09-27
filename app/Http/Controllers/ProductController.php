@@ -4,12 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with('images')->where('is_active', true);
+        $salesSub = DB::table('order_items')
+            ->selectRaw('COALESCE(SUM(quantity), 0)')
+            ->whereColumn('product_id', 'products.id')
+            ->whereIn('order_id', fn($q) => $q->select('id')->from('orders')->where('order_status', 'delivered'));
+
+        $query = Product::select('products.*')
+            ->selectSub($salesSub, 'sales_count')
+            ->with('images')
+            ->withAvg('reviews', 'rating')
+            ->where('is_active', true);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -29,12 +39,23 @@ class ProductController extends Controller
 
     public function show(string $slug)
     {
-        $product = Product::with('images')
+        $salesSub = DB::table('order_items')
+            ->selectRaw('COALESCE(SUM(quantity), 0)')
+            ->whereColumn('product_id', 'products.id')
+            ->whereIn('order_id', fn($q) => $q->select('id')->from('orders')->where('order_status', 'delivered'));
+
+        $product = Product::select('products.*')
+            ->selectSub($salesSub, 'sales_count')
+            ->with('images')
+            ->withAvg('reviews', 'rating')
             ->where('slug', $slug)
             ->where('is_active', true)
             ->firstOrFail();
 
-        $related = Product::with('images')
+        $related = Product::select('products.*')
+            ->selectSub($salesSub, 'sales_count')
+            ->with('images')
+            ->withAvg('reviews', 'rating')
             ->where('is_active', true)
             ->where('id', '!=', $product->id)
             ->take(4)

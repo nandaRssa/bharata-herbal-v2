@@ -37,15 +37,30 @@ class ProductAdminController extends Controller
             'description'        => 'nullable|string',
             'ingredients'        => 'nullable|string',
             'usage'              => 'nullable|string',
-            'price'              => 'required|integer|min:0',
-            'stock'              => 'required|integer|min:0',
+            'price'              => ['required', 'integer', 'min:0', 'regex:/^[0-9]+$/'],
+            'stock'              => ['required', 'integer', 'min:0', 'regex:/^[0-9]+$/'],
             'benefits'           => 'nullable|array',
-            'images.*'           => 'nullable|image|max:2048',
+            'images.*'           => [
+                'nullable',
+                'file',
+                'max:2048',
+                'mimes:jpeg,jpg,png,webp,gif',
+                function ($attribute, $file, $fail) {
+                    if (!$file || !$file->isValid()) return;
+                    $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                    $realMime = $finfo->file($file->getPathname());
+                    $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+                    if (!in_array($realMime, $allowed)) {
+                        $fail('File gambar tidak valid atau mengandung konten berbahaya.');
+                    }
+                },
+            ],
             'discount_type'      => 'nullable|in:percentage,fixed',
             'discount_value'     => [
                 'nullable',
                 'integer',
                 'min:0',
+                'regex:/^[0-9]+$/',
                 function ($attribute, $value, $fail) use ($request) {
                     if ($request->discount_type === 'percentage' && $value > 100) {
                         $fail('Diskon persen tidak boleh melebihi 100%.');
@@ -60,21 +75,14 @@ class ProductAdminController extends Controller
                 'nullable',
                 'date',
                 function ($attribute, $value, $fail) use ($request) {
-                    if (!$value) return;
-                    $end = $this->parseLocalDateTime($value, $request->timezone_offset);
-                    // must be > now
-                    if ($end->lte(now())) {
-                        $fail('Tanggal berakhir diskon harus lebih dari waktu saat ini. Contoh: jika sekarang jam 21:00, maka minimal jam 21:01.');
-                        return;
-                    }
-                    // must be >= discount_start_at
+                    if (!$value || !$request->boolean('is_discount_active')) return;
                     $start = $request->discount_start_at;
-                    if ($start && $end->lt($this->parseLocalDateTime($start, $request->timezone_offset))) {
+                    if ($start && $this->parseLocalDateTime($value, $request->timezone_offset)->lt($this->parseLocalDateTime($start, $request->timezone_offset))) {
                         $fail('Tanggal berakhir diskon tidak boleh kurang dari tanggal mulai diskon.');
                     }
                 },
             ],
-        ]);
+        ], $this->numericValidationMessages());
 
         $slug = Str::slug($request->name);
         $base = $slug;
@@ -119,15 +127,30 @@ class ProductAdminController extends Controller
             'description'        => 'nullable|string',
             'ingredients'        => 'nullable|string',
             'usage'              => 'nullable|string',
-            'price'              => 'required|integer|min:0',
-            'stock'              => 'required|integer|min:0',
+            'price'              => ['required', 'integer', 'min:0', 'regex:/^[0-9]+$/'],
+            'stock'              => ['required', 'integer', 'min:0', 'regex:/^[0-9]+$/'],
             'benefits'           => 'nullable|array',
-            'images.*'           => 'nullable|image|max:2048',
+            'images.*'           => [
+                'nullable',
+                'file',
+                'max:2048',
+                'mimes:jpeg,jpg,png,webp,gif',
+                function ($attribute, $file, $fail) {
+                    if (!$file || !$file->isValid()) return;
+                    $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                    $realMime = $finfo->file($file->getPathname());
+                    $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+                    if (!in_array($realMime, $allowed)) {
+                        $fail('File gambar tidak valid atau mengandung konten berbahaya.');
+                    }
+                },
+            ],
             'discount_type'      => 'nullable|in:percentage,fixed',
             'discount_value'     => [
                 'nullable',
                 'integer',
                 'min:0',
+                'regex:/^[0-9]+$/',
                 function ($attribute, $value, $fail) use ($request) {
                     if ($request->discount_type === 'percentage' && $value > 100) {
                         $fail('Diskon persen tidak boleh melebihi 100%.');
@@ -142,23 +165,30 @@ class ProductAdminController extends Controller
                 'nullable',
                 'date',
                 function ($attribute, $value, $fail) use ($request) {
-                    if (!$value) return;
-                    $end = $this->parseLocalDateTime($value, $request->timezone_offset);
-                    // must be > now
-                    if ($end->lte(now())) {
-                        $fail('Tanggal berakhir diskon harus lebih dari waktu saat ini. Contoh: jika sekarang jam 21:00, maka minimal jam 21:01.');
-                        return;
-                    }
-                    // must be >= discount_start_at
+                    if (!$value || !$request->boolean('is_discount_active')) return;
                     $start = $request->discount_start_at;
-                    if ($start && $end->lt($this->parseLocalDateTime($start, $request->timezone_offset))) {
+                    if ($start && $this->parseLocalDateTime($value, $request->timezone_offset)->lt($this->parseLocalDateTime($start, $request->timezone_offset))) {
                         $fail('Tanggal berakhir diskon tidak boleh kurang dari tanggal mulai diskon.');
                     }
                 },
             ],
-        ]);
+        ], $this->numericValidationMessages());
 
-        $product->update([
+        $discountFields = $request->boolean('is_discount_active')
+            ? [
+                'discount_type'      => $request->discount_type,
+                'discount_value'     => $request->discount_value,
+                'discount_start_at'  => $this->localToUtc($request->discount_start_at, $request->timezone_offset),
+                'discount_end_at'    => $this->localToUtc($request->discount_end_at, $request->timezone_offset),
+              ]
+            : [
+                'discount_type'      => null,
+                'discount_value'     => null,
+                'discount_start_at'  => null,
+                'discount_end_at'    => null,
+              ];
+
+        $product->update(array_merge([
             'name'               => $request->name,
             'description'        => $request->description,
             'benefits'           => array_filter($request->benefits ?? []),
@@ -167,14 +197,20 @@ class ProductAdminController extends Controller
             'price'              => $request->price,
             'stock'              => $request->stock,
             'is_active'          => $request->boolean('is_active'),
-            'discount_type'      => $request->discount_type,
-            'discount_value'     => $request->discount_value,
-            'discount_start_at'  => $this->localToUtc($request->discount_start_at, $request->timezone_offset),
-            'discount_end_at'    => $this->localToUtc($request->discount_end_at, $request->timezone_offset),
             'is_discount_active' => $request->boolean('is_discount_active'),
-        ]);
+        ], $discountFields));
 
         $this->handleImageUploads($request, $product);
+
+        if ($request->has('deleted_images')) {
+            $images = ProductImage::whereIn('id', $request->deleted_images)
+                ->whereHas('product', fn($q) => $q->where('id', $product->id))
+                ->get();
+            foreach ($images as $image) {
+                Storage::disk('public')->delete($image->image_path);
+                $image->delete();
+            }
+        }
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Produk berhasil diperbarui!');
@@ -189,6 +225,27 @@ class ProductAdminController extends Controller
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Produk berhasil dihapus!');
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'product_ids' => 'required|array',
+            'product_ids.*' => 'exists:products,id',
+        ]);
+
+        $products = Product::with('images')->whereIn('id', $request->product_ids)->get();
+        $count = $products->count();
+
+        foreach ($products as $product) {
+            foreach ($product->images as $image) {
+                Storage::disk('public')->delete($image->image_path);
+            }
+            $product->delete();
+        }
+
+        return redirect()->route('admin.products.index')
+            ->with('success', "{$count} produk berhasil dihapus!");
     }
 
     public function toggleActive(Product $product)
@@ -246,5 +303,20 @@ class ProductAdminController extends Controller
             $product->images()->update(['is_primary' => false]);
             $product->images()->where('id', $request->primary_image_id)->update(['is_primary' => true]);
         }
+    }
+
+    private function numericValidationMessages(): array
+    {
+        return [
+            'price.regex' => 'Harga jual hanya boleh berisi angka tanpa simbol atau huruf.',
+            'price.integer' => 'Harga jual harus berupa angka bulat.',
+            'price.min' => 'Harga jual tidak boleh kurang dari 0.',
+            'stock.regex' => 'Stok hanya boleh berisi angka tanpa simbol atau huruf.',
+            'stock.integer' => 'Stok harus berupa angka bulat.',
+            'stock.min' => 'Stok tidak boleh kurang dari 0.',
+            'discount_value.regex' => 'Nilai diskon hanya boleh berisi angka tanpa simbol atau huruf.',
+            'discount_value.integer' => 'Nilai diskon harus berupa angka bulat.',
+            'discount_value.min' => 'Nilai diskon tidak boleh kurang dari 0.',
+        ];
     }
 }

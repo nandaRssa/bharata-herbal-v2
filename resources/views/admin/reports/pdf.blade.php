@@ -18,11 +18,11 @@
         tbody td { padding: 7px 10px; border-bottom: 1px solid #eee; }
         .total-row td { font-weight: bold; background: #FEFAE0; color: #1B4332; }
         .footer { margin-top: 20px; font-size: 10px; color: #999; text-align: center; }
-        .gold { color: #C9A84C; font-weight: bold; }
+        .gold { color: #0D2618; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h1>🌿 Bharata Herbal ID — Laporan Penjualan</h1>
+    <h1>Bharata Herbal ID &mdash; Laporan Penjualan</h1>
     <p class="subtitle">Periode: {{ \Carbon\Carbon::parse($start)->translatedFormat('d F Y') }} s/d {{ \Carbon\Carbon::parse($end)->translatedFormat('d F Y') }}</p>
 
     <div class="summary">
@@ -73,6 +73,7 @@
         </tbody>
     </table>
 
-    <p class="footer">Dicetak pada {{ now()->format('d/m/Y H:i') }} | Bharata Herbal ID © {{ date('Y') }}</p>
+    <p class="footer">Dicetak pada {{ now()->format('d/m/Y H:i') }} | Bharata Herbal ID Â© {{ date('Y') }}</p>
 </body>
 </html>
+
