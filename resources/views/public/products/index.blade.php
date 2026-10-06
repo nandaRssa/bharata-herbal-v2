@@ -608,12 +608,47 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, 300);
 
-    /* Scroll logic: restore position when search/filter reloads */
-    var savedY = sessionStorage.getItem('scrollY');
-    if (savedY !== null) {
-        window.scrollTo(0, parseInt(savedY));
-        sessionStorage.removeItem('scrollY');
+    /* ── Auto-scroll ke Section Produk ────────────────────────── */
+    function scrollToCatalog(smooth) {
+        var catalogSection = document.getElementById('catalog-content');
+        if (!catalogSection) return;
+        var nav = document.getElementById('main-nav');
+        var navOffset = nav ? nav.offsetHeight : 68;
+        var targetY = catalogSection.getBoundingClientRect().top + window.pageYOffset - navOffset;
+        window.scrollTo({
+            top: Math.max(0, Math.round(targetY)),
+            behavior: smooth ? 'smooth' : 'auto'
+        });
     }
+
+    // Matikan scroll restoration otomatis browser agar selalu fokus ke section produk
+    if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+    }
+
+    // Jalankan auto scroll saat halaman pertama kali selesai dimuat
+    setTimeout(function() {
+        scrollToCatalog(true);
+    }, 120);
+
+    // Jika user mengklik tombol/link "Produk" saat sedang di halaman produk
+    document.querySelectorAll('a[href*="/produk"], a[href="{{ route('products.index') }}"]').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            var targetHref = link.getAttribute('href');
+            if (targetHref && !targetHref.includes('?') && !targetHref.includes('#')) {
+                var currentPath = window.location.pathname.replace(/\/$/, '');
+                var linkPath = new URL(link.href, window.location.origin).pathname.replace(/\/$/, '');
+                if (currentPath === linkPath) {
+                    e.preventDefault();
+                    var mobileMenu = document.getElementById('mobile-menu');
+                    if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                    scrollToCatalog(true);
+                }
+            }
+        });
+    });
 });
 </script>
 @endpush
