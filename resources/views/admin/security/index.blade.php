@@ -230,7 +230,7 @@
                                     <polyline points="22,6 12,13 2,6"/>
                                 </svg>
                             </span>
-                            <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}" required placeholder="admin@bharataherbal.id">
+                            <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}" required placeholder="Masukkan alamat email">
                         </div>
                         @error('email')
                         <div class="field-error">

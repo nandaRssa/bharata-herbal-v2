@@ -20,7 +20,7 @@
                     </svg>
                 </div>
                 <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
-                    class="w-full border border-slate-200 rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 transition duration-200 bg-slate-50/50 focus:bg-white text-slate-800 font-medium placeholder-slate-400" placeholder="admin@bharata.id">
+                    class="w-full border border-slate-200 rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 transition duration-200 bg-slate-50/50 focus:bg-white text-slate-800 font-medium placeholder-slate-400" placeholder="Masukkan alamat email">
             </div>
             @if($errors->has('email'))
                 <p class="text-rose-500 text-xs mt-1.5 font-semibold">{{ $errors->first('email') }}</p>
