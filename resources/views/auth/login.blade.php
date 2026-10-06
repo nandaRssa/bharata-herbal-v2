@@ -38,13 +38,19 @@
                 @endif
             </div>
             <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                     <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                 </div>
-                <input id="password" type="password" name="password" required autocomplete="current-password"
-                    class="w-full border border-slate-200 rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 transition duration-200 bg-slate-50/50 focus:bg-white text-slate-800 font-medium placeholder-slate-400" placeholder="••••••••">
+                <x-password-input
+                    id="password"
+                    name="password"
+                    required
+                    autocomplete="current-password"
+                    class="w-full border border-slate-200 rounded-xl pl-11 pr-11 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 transition duration-200 bg-slate-50/50 focus:bg-white text-slate-800 font-medium placeholder-slate-400"
+                    placeholder="••••••••"
+                />
             </div>
             @if($errors->has('password'))
                 <p class="text-rose-500 text-xs mt-1.5 font-semibold">{{ $errors->first('password') }}</p>

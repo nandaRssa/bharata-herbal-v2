@@ -56,6 +56,10 @@
 }
 .input-wrap.has-icon input { padding-left:40px; }
 .input-wrap.has-toggle input { padding-right:42px; }
+input::-ms-reveal,
+input::-ms-clear {
+    display: none !important;
+}
 .input-icon-left {
     position:absolute; left:14px; color:#8A9A92; pointer-events:none;
     display:flex; align-items:center; justify-content:center;

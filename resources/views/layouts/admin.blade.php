@@ -36,6 +36,7 @@
             --sidebar-w:     256px;
         }
         *, *::before, *::after { box-sizing: border-box; }
+        input::-ms-reveal, input::-ms-clear { display: none !important; }
         body {
             font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
             background: #f1f5f2;
