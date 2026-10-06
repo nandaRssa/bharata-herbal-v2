@@ -360,7 +360,7 @@ document.addEventListener('alpine:init', () => {
 });
 </script>
 <style>
-@keyframes pulseDot { 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+@@keyframes pulseDot { 0%,100%{opacity:1;} 50%{opacity:0.35;} }
 </style>
 @endpush
 @endsection
