@@ -512,17 +512,7 @@
                         <div class="font-bold text-[#0D2618] text-sm">{{ 'Rp ' . number_format($cost,0,',','.') }}</div>
                     </label>
                     @endforeach
-                    {{-- Opsi TEST: selalu tampil untuk keperluan pengujian --}}
-                    <label class="flex items-center justify-between p-4 border-2 border-dashed rounded-xl cursor-pointer transition duration-200 sm:col-span-2"
-                        :class="form.shipping_method === 'TEST' ? 'border-amber-500 bg-amber-50 ring-1 ring-amber-400/30' : 'border-amber-300 hover:border-amber-500 hover:bg-amber-50/50'"
-                        @click="form.shipping_method='TEST'; form.shipping_cost=0; delete fieldErrors.shipping_method; resolveFieldErrors()">
-                        <input type="radio" name="shipping_method" value="TEST" class="sr-only">
-                        <div>
-                            <div class="font-bold text-amber-700 text-sm">🧪 Test (Gratis)</div>
-                            <div class="text-[10px] text-amber-500 font-medium mt-0.5">Untuk keperluan pengujian</div>
-                        </div>
-                        <div class="font-bold text-green-600 text-sm">GRATIS</div>
-                    </label>
+
 
                 </div>
                 <template x-if="fieldErrors.shipping_method">

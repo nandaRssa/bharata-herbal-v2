@@ -296,9 +296,10 @@
                 </div>
                 <h3 class="card-header-title">Metode Pembayaran</h3>
             </div>
-            <span style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:50px; font-size:0.7rem; font-weight:600; background:rgba(21,101,192,0.10); color:#1565C0; border:1px solid rgba(21,101,192,0.15);">
-                <span style="width:6px; height:6px; border-radius:50%; background:#1565C0; animation:pulseDot 2s ease-in-out infinite;"></span>
-                Midtrans Sandbox
+            @php $isMidtransProduction = config('midtrans.is_production', false); @endphp
+            <span style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:50px; font-size:0.7rem; font-weight:600; background:{{ $isMidtransProduction ? 'rgba(0,120,40,0.10)' : 'rgba(21,101,192,0.10)' }}; color:{{ $isMidtransProduction ? '#006428' : '#1565C0' }}; border:1px solid {{ $isMidtransProduction ? 'rgba(0,120,40,0.2)' : 'rgba(21,101,192,0.15)' }};">
+                <span style="width:6px; height:6px; border-radius:50%; background:{{ $isMidtransProduction ? '#00a73c' : '#1565C0' }}; animation:pulseDot 2s ease-in-out infinite;"></span>
+                {{ $isMidtransProduction ? 'Midtrans Production' : 'Midtrans Sandbox' }}
             </span>
         </div>
         <div class="card-body">
