@@ -601,16 +601,9 @@
 <div class="invoice-page">
 <div class="invoice-container">
 
-    {{-- Flash messages --}}
-    @if(session('success'))
-    <div class="fade-up fade-up-1 flash-success">
-        <i class="fas fa-check-circle" style="font-size:1.1rem;"></i>
-        <span>{{ session('success') }}</span>
-    </div>
-    @endif
-
+    {{-- Flash messages ($errors only, session('success') is handled globally by layouts.public) --}}
     @if($errors->any())
-    <div class="fade-up fade-up-1 flash-error">
+    <div class="fade-up fade-up-1 flash-error" style="background:#FEE2E2;border:1px solid #FCA5A5;color:#991B1B;padding:12px 16px;border-radius:12px;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
         <i class="fas fa-exclamation-circle" style="font-size:1.1rem;"></i>
         <span>{{ $errors->first() }}</span>
     </div>
@@ -975,7 +968,10 @@
         } else if (method === 'onSuccess') {
             fetch('{{ route("payment.confirm") }}', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
                 body: JSON.stringify(result)
             })
             .then(function(r) { return r.json(); })

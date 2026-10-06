@@ -5,9 +5,11 @@
 
 @push('styles')
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+@verbatim
 <style>
 /* â”€â”€ Animations â”€â”€ */
-@@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+@keyframes pulseDot { 0%,100%{opacity:1;} 50%{opacity:0.35;} }
 .fade-up { animation:fadeUp 0.4s ease forwards; opacity:0; }
 .fade-up.d1 { animation-delay:0.05s; }
 .fade-up.d2 { animation-delay:0.10s; }
@@ -88,7 +90,7 @@
 
 /* â”€â”€ Grid 2 col â”€â”€ */
 .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-@@media (max-width:600px) { .grid-2 { grid-template-columns:1fr; } }
+@media (max-width:600px) { .grid-2 { grid-template-columns:1fr; } }
 
 /* â”€â”€ Payment method row â”€â”€ */
 .pm-row {
@@ -162,12 +164,13 @@
 }
 
 /* â”€â”€ Responsive â”€â”€ */
-@@media (max-width:768px) {
+@media (max-width:768px) {
     .card-body { padding:16px; }
     .card-header { padding:14px 16px; }
     .pm-row { padding:12px 14px; }
 }
 </style>
+@endverbatim
 @endpush
 
 @section('content')
@@ -296,11 +299,17 @@
                 </div>
                 <h3 class="card-header-title">Metode Pembayaran</h3>
             </div>
-            @php $isMidtransProduction = config('midtrans.is_production', false); @endphp
-            <span style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:50px; font-size:0.7rem; font-weight:600; background:{{ $isMidtransProduction ? 'rgba(0,120,40,0.10)' : 'rgba(21,101,192,0.10)' }}; color:{{ $isMidtransProduction ? '#006428' : '#1565C0' }}; border:1px solid {{ $isMidtransProduction ? 'rgba(0,120,40,0.2)' : 'rgba(21,101,192,0.15)' }};">
-                <span style="width:6px; height:6px; border-radius:50%; background:{{ $isMidtransProduction ? '#00a73c' : '#1565C0' }}; animation:pulseDot 2s ease-in-out infinite;"></span>
-                {{ $isMidtransProduction ? 'Midtrans Production' : 'Midtrans Sandbox' }}
+            @if(config('midtrans.is_production', false))
+            <span style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:50px; font-size:0.7rem; font-weight:600; background:rgba(0,120,40,0.10); color:#006428; border:1px solid rgba(0,120,40,0.2);">
+                <span style="width:6px; height:6px; border-radius:50%; background:#00a73c; animation:pulseDot 2s ease-in-out infinite;"></span>
+                Midtrans Production
             </span>
+            @else
+            <span style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:50px; font-size:0.7rem; font-weight:600; background:rgba(21,101,192,0.10); color:#1565C0; border:1px solid rgba(21,101,192,0.15);">
+                <span style="width:6px; height:6px; border-radius:50%; background:#1565C0; animation:pulseDot 2s ease-in-out infinite;"></span>
+                Midtrans Sandbox
+            </span>
+            @endif
         </div>
         <div class="card-body">
             <p style="font-family:'Inter',sans-serif; font-size:0.8rem; color:#8A9A92; margin:0 0 16px;">
@@ -334,6 +343,7 @@
                         </div>
                     </div>
                 </div>
+                @endforeach
             </div>
         </div>
     </div>
@@ -359,8 +369,5 @@ document.addEventListener('alpine:init', () => {
     }));
 });
 </script>
-<style>
-@@keyframes pulseDot { 0%,100%{opacity:1;} 50%{opacity:0.35;} }
-</style>
 @endpush
 @endsection

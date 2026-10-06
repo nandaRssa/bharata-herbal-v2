@@ -36,9 +36,11 @@ Route::post('/keranjang/hapus', [CartController::class, 'remove'])->name('cart.r
 Route::get('/pesan', [OrderController::class, 'form'])->name('order.form');
 Route::post('/pesan', [OrderController::class, 'store'])->middleware('throttle:5,1')->name('order.store');
 Route::get('/pesanan/{orderNumber}/sukses', [OrderController::class, 'success'])->name('order.success');
+Route::get('/pesanan/{orderNumber}/cek-status', [OrderController::class, 'checkPaymentStatus'])->name('order.check-status');
 
 // Order tracking (public, no login)
 Route::get('/pesanan/{orderNumber}/status', [OrderTrackingController::class, 'show'])->name('order.track.show');
+Route::get('/pesanan/{orderNumber}/lacak', [OrderTrackingController::class, 'show'])->name('order.track');
 Route::post('/pesanan/{orderNumber}/status', [OrderTrackingController::class, 'verify'])->middleware('throttle:10,1')->name('order.track.verify');
 Route::post('/pesanan/{orderNumber}/ulasan', [OrderTrackingController::class, 'submitReview'])->middleware('throttle:5,1')->name('order.track.review');
 Route::get('/riwayat-pesanan', [OrderTrackingController::class, 'historyForm'])->name('order.history');

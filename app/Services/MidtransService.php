@@ -24,9 +24,10 @@ class MidtransService
      */
     public function createSnapToken(Order $order, ?string $paymentMethod = null): string
     {
+        $midtransOrderId = $order->order_number . '-' . ($order->created_at?->timestamp ?? time());
         $params = [
             'transaction_details' => [
-                'order_id'     => $order->order_number . '-' . time(), // unik per attempt
+                'order_id'     => $midtransOrderId,
                 'gross_amount' => (int) $order->total_amount,
             ],
             'customer_details' => [
@@ -37,11 +38,17 @@ class MidtransService
             'item_details' => $this->buildItemDetails($order),
         ];
 
-        // Expiry 24 jam â€” Midtrans akan auto-cancel setelah waktu habis
+        // Expiry 24 jam — Midtrans akan auto-cancel setelah waktu habis
         $params['expiry'] = [
             'start_time' => date('Y-m-d H:i:s O'),
             'unit'       => 'day',
             'duration'   => 1,
+        ];
+
+        // URL redirect saat pembayaran selesai di aplikasi / web Midtrans
+        $returnUrl = route('order.success', $order->order_number);
+        $params['callbacks'] = [
+            'finish' => $returnUrl,
         ];
 
         // Batasi Snap ke channel yang dipilih customer
@@ -49,7 +56,28 @@ class MidtransService
         if ($paymentMethod && $paymentMethod !== 'qris') {
             $channel = $this->resolveMidtransChannel($paymentMethod);
             if ($channel) {
-                $params['enabled_payments'] = [$channel];
+                // Untuk e-wallet seperti DANA & OVO, sertakan other_qris sebagai fallback
+                // sehingga jika direct channel belum di-approve di Midtrans Production,
+                // pembeli tetap bisa bayar pakai saldo DANA/OVO via scan QRIS tanpa error "no channel available"
+                if ($channel === 'dana') {
+                    $params['enabled_payments'] = ['dana', 'other_qris'];
+                } elseif ($channel === 'ovo') {
+                    $params['enabled_payments'] = ['ovo', 'other_qris'];
+                } else {
+                    $params['enabled_payments'] = [$channel];
+                }
+
+                $returnUrl = route('order.success', $order->order_number);
+                if ($channel === 'dana') {
+                    $params['dana'] = [
+                        'callback_url' => $returnUrl,
+                    ];
+                } elseif ($channel === 'gopay') {
+                    $params['gopay'] = [
+                        'enable_callback' => true,
+                        'callback_url'    => $returnUrl,
+                    ];
+                }
             }
         }
 

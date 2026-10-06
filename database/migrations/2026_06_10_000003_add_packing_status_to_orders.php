@@ -21,12 +21,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Untuk SQLite: tidak perlu ALTER karena ENUM tidak di-enforce
-        // Kolom sudah ada sebagai TEXT/VARCHAR yang menerima nilai apapun
-        // Tidak ada schema change yang diperlukan untuk SQLite
-
-        // Untuk MySQL di masa depan, gunakan raw SQL:
-        // DB::statement("ALTER TABLE orders MODIFY COLUMN order_status ENUM('new','processing','packing','shipped','delivered','cancelled') DEFAULT 'new'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE orders MODIFY COLUMN order_status ENUM('new','processing','packing','shipped','delivered','cancelled') DEFAULT 'new'");
+        }
     }
 
     public function down(): void

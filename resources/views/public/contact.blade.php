@@ -365,7 +365,44 @@
     </div>
 </section>
 
-<!-- ── METODE PEMBAYARAN (Virtual Account) ─────────────── -->
+<!-- ── METODE PEMBAYARAN ─────────────────────────────────── -->
+@php
+    $enabled = $enabledPaymentMethods ?? ($settings?->enabledPaymentMethods() ?? []);
+    $displayPayments = [];
+
+    // 1. Virtual Account (Bank Transfer)
+    if (!empty($enabled['bank_transfer'])) {
+        $displayPayments[] = ['name' => 'Virtual Account', 'label' => 'BCA, Mandiri, BNI, BRI', 'icon' => 'fa-university'];
+    }
+
+    // 2. QRIS
+    if (!empty($enabled['qris'])) {
+        $displayPayments[] = ['name' => 'QRIS', 'label' => 'Instant QR', 'icon' => 'fa-qrcode'];
+    }
+
+    // 3. E-Wallet
+    if (!empty($enabled['dana'])) {
+        $displayPayments[] = ['name' => 'DANA', 'label' => 'E-Wallet', 'icon' => 'fa-wallet'];
+    }
+    if (!empty($enabled['gopay'])) {
+        $displayPayments[] = ['name' => 'GoPay', 'label' => 'E-Wallet', 'icon' => 'fa-wallet'];
+    }
+    if (!empty($enabled['ovo'])) {
+        $displayPayments[] = ['name' => 'OVO', 'label' => 'E-Wallet', 'icon' => 'fa-wallet'];
+    }
+
+    // 4. Mobile Banking
+    if (!empty($enabled['brimo'])) {
+        $displayPayments[] = ['name' => 'BRImo', 'label' => 'Mobile Banking', 'icon' => 'fa-mobile-screen'];
+    }
+
+    // 5. COD
+    if (!empty($enabled['cod'])) {
+        $displayPayments[] = ['name' => 'COD', 'label' => 'Bayar di Tempat', 'icon' => 'fa-hand-holding-dollar'];
+    }
+@endphp
+
+@if(count($displayPayments) > 0)
 <section class="payment-section fade-up">
     <div class="payment-inner">
         <span style="display:inline-flex; align-items:center; background:rgba(255,255,255,0.1); color:#FFFFFF; border:1px solid rgba(255,255,255,0.2); border-radius:50px; padding:6px 20px; font-size:0.7rem; letter-spacing:2px; text-transform:uppercase; font-weight:600; margin-bottom:16px;">
@@ -373,30 +410,20 @@
             Metode Pembayaran
         </span>
         <h2 class="payment-title">Metode Pembayaran Digital</h2>
-        <p class="payment-desc">Kami menerima pembayaran otomatis terverifikasi 24/7 melalui Virtual Account bank nasional terkemuka.</p>
-
-        @php
-            $vaBanks = [
-                ['name' => 'BCA', 'label' => 'Virtual Account', 'icon' => 'fa-university'],
-                ['name' => 'Mandiri', 'label' => 'Virtual Account', 'icon' => 'fa-university'],
-                ['name' => 'BNI', 'label' => 'Virtual Account', 'icon' => 'fa-university'],
-                ['name' => 'BRI', 'label' => 'Virtual Account', 'icon' => 'fa-university'],
-                ['name' => 'Permata', 'label' => 'Virtual Account', 'icon' => 'fa-university'],
-                ['name' => 'Bank Lain', 'label' => 'Virtual Account', 'icon' => 'fa-wallet'],
-            ];
-        @endphp
+        <p class="payment-desc">Kami menerima pembayaran otomatis terverifikasi 24/7 melalui metode pembayaran resmi yang aktif.</p>
 
         <div class="payment-grid">
-            @foreach($vaBanks as $va)
+            @foreach($displayPayments as $item)
             <div class="payment-item fade-up" style="transition-delay:{{ 0.04 * $loop->iteration }}s;">
-                <i class="fas {{ $va['icon'] }}"></i>
-                <strong>{{ $va['name'] }}</strong>
-                <span>{{ $va['label'] }}</span>
+                <i class="fas {{ $item['icon'] }}"></i>
+                <strong>{{ $item['name'] }}</strong>
+                <span>{{ $item['label'] }}</span>
             </div>
             @endforeach
         </div>
     </div>
 </section>
+@endif
 
 <!-- ── KONSULTASI ──────────────────────────────────────── -->
 <section class="consult-section fade-up">

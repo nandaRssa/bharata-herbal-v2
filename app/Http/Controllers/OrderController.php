@@ -173,8 +173,66 @@ class OrderController extends Controller
         $order    = Order::with('items.product')
             ->where('order_number', $orderNumber)
             ->firstOrFail();
+
+        // Auto-sinkronisasi jika order belum confirmed dan bukan COD
+        if ($order->payment_status !== 'confirmed' && $order->payment_method !== 'cod') {
+            try {
+                $idToCheck = $order->midtrans_transaction_id ?: ($order->order_number . '-' . $order->created_at->timestamp);
+                $statusObj = \Midtrans\Transaction::status($idToCheck);
+                $transactionStatus = $statusObj->transaction_status ?? '';
+                $fraudStatus       = $statusObj->fraud_status ?? '';
+
+                $midtransService = app(\App\Services\MidtransService::class);
+                $paymentStatus = $midtransService->resolvePaymentStatus($transactionStatus, $fraudStatus);
+
+                if ($paymentStatus === 'confirmed' || in_array($transactionStatus, ['settlement', 'capture'])) {
+                    $order->update([
+                        'payment_status'          => 'confirmed',
+                        'order_status'            => $order->order_status === 'new' ? 'processing' : $order->order_status,
+                        'midtrans_transaction_id' => $statusObj->transaction_id ?? $idToCheck,
+                    ]);
+                    $order->refresh();
+                }
+            } catch (\Exception $e) {
+                // Ignore jika transaksi belum dibuat di Midtrans
+            }
+        }
+
         $settings = StoreSetting::getInstance();
 
         return view('public.order.success', compact('order', 'settings'));
+    }
+
+    /**
+     * Endpoint AJAX untuk mengecek status pembayaran secara realtime.
+     * GET /pesanan/{orderNumber}/cek-status
+     */
+    public function checkPaymentStatus(string $orderNumber)
+    {
+        $order = Order::where('order_number', $orderNumber)->firstOrFail();
+
+        if ($order->payment_status === 'confirmed') {
+            return response()->json(['paid' => true, 'payment_status' => $order->payment_status]);
+        }
+
+        if ($order->payment_method !== 'cod') {
+            try {
+                $idToCheck = $order->midtrans_transaction_id ?: ($order->order_number . '-' . $order->created_at->timestamp);
+                $statusObj = \Midtrans\Transaction::status($idToCheck);
+                $transactionStatus = $statusObj->transaction_status ?? '';
+                if (in_array($transactionStatus, ['settlement', 'capture'])) {
+                    $order->update([
+                        'payment_status'          => 'confirmed',
+                        'order_status'            => $order->order_status === 'new' ? 'processing' : $order->order_status,
+                        'midtrans_transaction_id' => $statusObj->transaction_id ?? $idToCheck,
+                    ]);
+                    return response()->json(['paid' => true, 'payment_status' => 'confirmed']);
+                }
+            } catch (\Exception $e) {
+                // Ignore jika belum dibayar
+            }
+        }
+
+        return response()->json(['paid' => false, 'payment_status' => $order->payment_status]);
     }
 }

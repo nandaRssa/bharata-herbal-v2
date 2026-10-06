@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // /payment/confirm dipanggil dari frontend JS, jadi WAJIB ada CSRF token.
         $middleware->validateCsrfTokens(except: [
             'payment/notification',  // Midtrans server-to-server webhook
+            'payment/confirm',       // Midtrans Snap callback dari frontend
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

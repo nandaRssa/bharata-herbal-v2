@@ -77,29 +77,61 @@
 
             @else
             <div class="p-6 rounded-2xl border-2 border-dashed" id="payment-section" style="border-color:rgba(13, 38, 24, 0.3);background:rgba(13, 38, 24, 0.04);">
-                <h3 class="font-bold text-sm mb-1" style="color:#0D2618;"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg> Selesaikan Pembayaran</h3>
-                <p class="text-xs mb-4 font-medium" style="color:#6A7A72;">
-                    Metode: <strong class="uppercase">{{ str_replace('_', ' ', $order->payment_method) }}</strong> &ndash;
-                    Total: <strong>Rp {{ number_format($order->total_amount, 0, ',', '.') }}</strong>
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+                    <h3 class="font-bold text-sm" style="color:#0D2618;">
+                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg> Selesaikan Pembayaran
+                    </h3>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                        Menunggu Pembayaran
+                    </span>
+                </div>
+
+                <p class="text-xs mb-3 font-medium" style="color:#6A7A72;">
+                    Metode: <strong class="uppercase text-slate-800">{{ str_replace('_', ' ', $order->payment_method) }}</strong> &ndash;
+                    Total: <strong class="text-slate-900 font-bold">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</strong>
                 </p>
 
-                @if($order->midtrans_snap_token)
-                <button id="pay-button"
-                    onclick="payWithSnapToken('{{ $order->midtrans_snap_token }}')"
-                    class="w-full py-3.5 rounded-xl font-bold text-sm transition shadow-md hover:shadow-lg"
-                    style="background: linear-gradient(135deg, #0D2618, #0D2618); color: #FFFFFF;">
-                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg> Bayar Sekarang
-                </button>
-                @else
-                <button id="pay-button" onclick="fetchAndPay()"
-                    class="w-full py-3.5 rounded-xl font-bold text-sm transition shadow-md hover:shadow-lg"
-                    style="background: linear-gradient(135deg, #0D2618, #0D2618); color: #FFFFFF;">
-                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg> Bayar Sekarang
-                </button>
-                @endif
+                <div id="payment-status-notice" class="p-3.5 rounded-xl bg-amber-50/90 border border-amber-200/80 text-xs text-amber-800 mb-4 flex items-start gap-2.5">
+                    <svg class="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <div class="leading-relaxed">
+                        Jendela pembayaran dibuka otomatis. Jika ingin membayar nanti, Anda dapat menutup jendela pembayaran dan menyelesaikannya kapan saja.
+                    </div>
+                </div>
 
-                <p class="text-[10px] mt-3 text-center font-medium" style="color:#8A9A92;">
-                    @if(!config('midtrans.is_production')) Transaksi test &mdash; saldo tidak terpotong @else Powered by Midtrans @endif
+                <div class="flex flex-col sm:flex-row gap-2.5">
+                    @if($order->midtrans_snap_token)
+                    <button id="pay-button"
+                        onclick="payWithSnapToken('{{ $order->midtrans_snap_token }}')"
+                        class="flex-1 py-3.5 px-4 rounded-xl font-bold text-sm transition shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                        style="background: linear-gradient(135deg, #0D2618, #0D2618); color: #FFFFFF;">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                        Bayar Sekarang
+                    </button>
+                    @else
+                    <button id="pay-button" onclick="fetchAndPay()"
+                        class="flex-1 py-3.5 px-4 rounded-xl font-bold text-sm transition shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                        style="background: linear-gradient(135deg, #0D2618, #0D2618); color: #FFFFFF;">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                        Bayar Sekarang
+                    </button>
+                    @endif
+
+                    <a href="{{ route('order.track.show', $order->order_number) }}"
+                        class="py-3.5 px-5 rounded-xl font-bold text-sm text-center border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 transition flex items-center justify-center gap-2 shadow-sm">
+                        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Bayar Nanti
+                    </a>
+                </div>
+
+                <button type="button" onclick="checkStatusNow()" id="check-status-btn"
+                    class="w-full mt-2.5 py-2.5 px-3 rounded-xl border border-dashed border-slate-300 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition flex items-center justify-center gap-2">
+                    <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Sudah bayar di aplikasi? Cek status sekarang
+                </button>
+
+                <p class="text-[11px] mt-2.5 text-center text-slate-500 font-medium">
+                    Pesanan Anda tersimpan aman. Selesaikan pembayaran sebelum batas waktu 24 jam.
                 </p>
             </div>
             @endif
@@ -158,67 +190,144 @@
     var isSandbox = {{ config('midtrans.is_production') ? 'false' : 'true' }};
 
     function onFinish(result, method) {
-        if (isSandbox) {
-            var f = document.createElement('form');
-            f.method = 'POST';
-            f.action = '{{ route("payment.simulate-success", $order->id) }}';
-            var t = document.createElement('input');
-            t.type = 'hidden';
-            t.name = '_token';
-            t.value = '{{ csrf_token() }}';
-            f.appendChild(t);
-            document.body.appendChild(f);
-            f.submit();
-        } else if (method === 'onSuccess') {
+        if (method === 'onSuccess') {
+            var btn = document.getElementById('pay-button');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<svg class="w-4 h-4 inline animate-spin" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Memverifikasi Pembayaran...';
+            }
+
             fetch('{{ route("payment.confirm") }}', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
                 body: JSON.stringify(result)
             })
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                Alpine.store('modal').alert('Pembayaran berhasil! Terima kasih.', 'success');
-                setTimeout(function() { window.location.reload(); }, 2000);
+                if (window.Alpine && Alpine.store('modal')) {
+                    Alpine.store('modal').alert('Pembayaran berhasil dikonfirmasi! Pesanan Anda sedang diproses.', 'success');
+                }
+                setTimeout(function() { window.location.reload(); }, 1200);
             })
             .catch(function() {
-                Alpine.store('modal').alert('Pembayaran berhasil! Terima kasih.', 'success');
-                setTimeout(function() { window.location.reload(); }, 2000);
+                setTimeout(function() { window.location.reload(); }, 1500);
             });
+        } else if (method === 'onPending') {
+            var notice = document.getElementById('payment-status-notice');
+            if (notice) {
+                notice.innerHTML = '<svg class="w-4 h-4 flex-shrink-0 mt-0.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><div class="leading-relaxed"><strong>Instruksi pembayaran diterima.</strong> Silakan selesaikan pembayaran sesuai petunjuk yang diberikan. Status akan otomatis diperbarui setelah pembayaran diterima.</div>';
+                notice.className = 'p-3.5 rounded-xl bg-blue-50/90 border border-blue-200/80 text-xs text-blue-800 mb-4 flex items-start gap-2.5';
+            }
+        } else if (method === 'onClose') {
+            var notice = document.getElementById('payment-status-notice');
+            if (notice) {
+                notice.innerHTML = '<svg class="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg><div class="leading-relaxed"><strong>Pembayaran belum diselesaikan.</strong> Pesanan Anda tetap tersimpan aman. Anda dapat melanjutkan pembayaran kapan saja dengan menekan tombol <strong>Bayar Sekarang</strong> di bawah atau memilih <strong>Bayar Nanti</strong>.</div>';
+                notice.className = 'p-3.5 rounded-xl bg-amber-50/90 border border-amber-200/80 text-xs text-amber-800 mb-4 flex items-start gap-2.5';
+            }
         }
     }
 
     function payWithSnapToken(token) {
+        if (!window.snap) {
+            console.error('Midtrans Snap belum siap');
+            return;
+        }
         window.snap.pay(token, {
             onSuccess: function(result)  { onFinish(result, 'onSuccess'); },
-            onPending: function(result)  { if (isSandbox) onFinish(result, 'onPending'); },
-            onError: function(result)    { if (isSandbox) onFinish(result, 'onError'); },
-            onClose: function()          { if (isSandbox) onFinish({}, 'onClose'); }
+            onPending: function(result)  { onFinish(result, 'onPending'); },
+            onError: function(result)    { onFinish(result, 'onError'); },
+            onClose: function()          { onFinish({}, 'onClose'); }
         });
     }
 
     function fetchAndPay() {
         const btn = document.getElementById('pay-button');
-        btn.disabled = true;
-        btn.innerHTML = '<svg class=\"w-4 h-4 inline animate-spin\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z\"/></svg> Memuat...';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="w-4 h-4 inline animate-spin" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Memuat...';
+        }
 
         fetch('{{ route("payment.snap-token", $order->id) }}')
             .then(res => res.json())
             .then(data => {
                 if (data.token) {
                     payWithSnapToken(data.token);
-                    btn.disabled = false;
-                    btn.innerHTML = '<svg class=\"w-4 h-4 inline\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z\"/></svg> Bayar Sekarang';
-                } else {
+                } else if (window.Alpine && Alpine.store('modal')) {
                     Alpine.store('modal').alert('Gagal memuat token: ' + (data.error || 'Unknown error'), 'error');
-                    btn.disabled = false;
-                    btn.innerHTML = '<svg class=\"w-4 h-4 inline\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z\"/></svg> Bayar Sekarang';
                 }
             })
             .catch(err => {
-                Alpine.store('modal').alert('Koneksi gagal. Pastikan server berjalan dan coba lagi.', 'error');
-                btn.disabled = false;
-                btn.innerHTML = '<svg class=\"w-4 h-4 inline\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z\"/></svg> Bayar Sekarang';
+                if (window.Alpine && Alpine.store('modal')) {
+                    Alpine.store('modal').alert('Koneksi gagal. Coba lagi.', 'error');
+                }
+            })
+            .finally(() => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<svg class="w-4 h-4 inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg> Bayar Sekarang';
+                }
             });
+    }
+
+    // Manual check status pembayaran
+    function checkStatusNow() {
+        const btn = document.getElementById('check-status-btn');
+        if (btn) btn.innerHTML = '<svg class="w-3.5 h-3.5 inline animate-spin" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Memeriksa status...';
+
+        fetch('{{ route("order.check-status", $order->order_number) }}')
+            .then(r => r.json())
+            .then(data => {
+                if (data.paid) {
+                    if (window.Alpine && Alpine.store('modal')) {
+                        Alpine.store('modal').alert('Pembayaran berhasil diverifikasi! Pesanan sedang diproses.', 'success');
+                    }
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    if (btn) btn.innerHTML = '<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Belum terdeteksi &mdash; Cek lagi';
+                }
+            })
+            .catch(() => {
+                if (btn) btn.innerHTML = '<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Coba cek lagi';
+            });
+    }
+
+    // Auto-polling setiap 4 detik untuk mendeteksi pembayaran dari HP secara otomatis
+    var pollInterval = setInterval(function() {
+        fetch('{{ route("order.check-status", $order->order_number) }}')
+            .then(r => r.json())
+            .then(data => {
+                if (data.paid) {
+                    clearInterval(pollInterval);
+                    if (window.Alpine && Alpine.store('modal')) {
+                        Alpine.store('modal').alert('Pembayaran berhasil terdeteksi! Terima kasih.', 'success');
+                    }
+                    setTimeout(() => window.location.reload(), 1000);
+                }
+            })
+            .catch(() => {});
+    }, 4000);
+
+    // Otomatis munculkan pop-up Snap saat halaman pertama kali dibuka
+    var hasAutoOpened = false;
+    function triggerAutoPayment() {
+        if (hasAutoOpened) return;
+        hasAutoOpened = true;
+        @if($order->midtrans_snap_token)
+            payWithSnapToken('{{ $order->midtrans_snap_token }}');
+        @else
+            fetchAndPay();
+        @endif
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(triggerAutoPayment, 600);
+    } else {
+        window.addEventListener('load', function() {
+            setTimeout(triggerAutoPayment, 600);
+        });
     }
 </script>
 @endif

@@ -48,12 +48,14 @@ class PaymentController extends Controller
         try {
             $payload = $request->all();
 
-            $this->midtrans->handleNotification($payload);
+            $midtransOrderId = $payload['order_id'] ?? '';
+            $transactionId   = $payload['transaction_id'] ?? '';
+            $orderNumber     = preg_replace('/-\d+$/', '', $midtransOrderId);
 
-            $transactionStatus = $payload['transaction_status'] ?? '';
-            $fraudStatus       = $payload['fraud_status'] ?? '';
-            $orderNumber       = preg_replace('/-\d+$/', '', $payload['order_id'] ?? '');
-            $transactionId     = $payload['transaction_id'] ?? '';
+            // Jika ada signature_key (panggilan dari webhook), verifikasi signature
+            if (!empty($payload['signature_key'])) {
+                $this->midtrans->handleNotification($payload);
+            }
 
             $order = Order::where('order_number', $orderNumber)->first();
 
@@ -65,11 +67,37 @@ class PaymentController extends Controller
                 return response()->json(['status' => 'already_confirmed']);
             }
 
+            $transactionStatus = $payload['transaction_status'] ?? '';
+            $fraudStatus       = $payload['fraud_status'] ?? '';
+
+            // Verifikasi status ke Midtrans API langsung jika ada transaction_id atau order_id
+            $idToCheck = $transactionId ?: $midtransOrderId;
+            if ($idToCheck) {
+                try {
+                    $statusObj = \Midtrans\Transaction::status($idToCheck);
+                    if ($statusObj) {
+                        $transactionStatus = $statusObj->transaction_status ?? $transactionStatus;
+                        $fraudStatus       = $statusObj->fraud_status ?? $fraudStatus;
+                        $transactionId     = $statusObj->transaction_id ?? $transactionId;
+                    }
+                } catch (\Exception $ex) {
+                    Log::warning('Midtrans Transaction::status check fallback to payload', [
+                        'order_number' => $orderNumber,
+                        'error'        => $ex->getMessage(),
+                    ]);
+                }
+            }
+
             $paymentStatus = $this->midtrans->resolvePaymentStatus($transactionStatus, $fraudStatus);
+
+            // Jika status transaksi settlement/capture, pastikan payment_status confirmed
+            if (in_array($transactionStatus, ['settlement', 'capture'])) {
+                $paymentStatus = 'confirmed';
+            }
 
             $updateData = [
                 'payment_status'          => $paymentStatus,
-                'midtrans_transaction_id' => $transactionId,
+                'midtrans_transaction_id' => $transactionId ?: $order->midtrans_transaction_id,
             ];
 
             if ($paymentStatus === 'confirmed' && $order->order_status === 'new') {
@@ -79,14 +107,15 @@ class PaymentController extends Controller
             $order->update($updateData);
 
             Log::info('Midtrans Confirm (onSuccess)', [
-                'order_number' => $orderNumber,
-                'status'       => $paymentStatus,
+                'order_number'   => $orderNumber,
+                'payment_status' => $paymentStatus,
+                'order_status'   => $updateData['order_status'] ?? $order->order_status,
             ]);
 
             return response()->json(['status' => 'ok', 'payment_status' => $paymentStatus]);
         } catch (\Exception $e) {
             Log::error('Midtrans Confirm Error', ['error' => $e->getMessage()]);
-            return response()->json(['error' => $e->getMessage()], 403);
+            return response()->json(['error' => $e->getMessage()], 400);
         }
     }
 

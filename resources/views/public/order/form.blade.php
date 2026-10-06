@@ -501,7 +501,7 @@
                 <h3 class="font-bold text-slate-700 text-sm uppercase tracking-wider"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1m5 1a2 2 0 100 4 2 2 0 000-4zm8 0a2 2 0 100 4 2 2 0 000-4zm0 0V9l-3-3m0 0h-3m3 0v3"/></svg> Opsi Kurir Ekspedisi</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"
                     :class="{'px-3 py-2 rounded-lg border border-red-400 bg-red-50': fieldErrors.shipping_method}">
-                    @foreach([['JNE','JNE Regular',15000],['JNT','J&T Express',12000],['SICEPAT','SiCepat',13000],['GOSEND','GoSend (Same Day)',25000]] as [$val,$label,$cost])
+                    @foreach([['JNE','JNE Regular',0],['JNT','J&T Express',12000],['SICEPAT','SiCepat',13000],['GOSEND','GoSend (Same Day)',25000]] as [$val,$label,$cost])
                     <label class="flex items-center justify-between p-4 border rounded-xl cursor-pointer transition duration-200"
                         :class="form.shipping_method === '{{ $val }}' ? 'border-[#0D2618] bg-[#F0EDE8]/50 ring-1 ring-[#0D2618]/20' : 'border-slate-200 hover:border-[#0D2618]'"
                         @click="form.shipping_method='{{ $val }}'; form.shipping_cost={{ $cost }}; delete fieldErrors.shipping_method; resolveFieldErrors()">
@@ -742,7 +742,7 @@
         'address_province' => old('address_province', ''),
         'address_postal' => old('address_postal', ''),
         'shipping_method' => old('shipping_method', 'JNE'),
-        'shipping_cost' => (int) old('shipping_cost', 15000),
+        'shipping_cost' => (int) old('shipping_cost', 0),
         'payment_method' => old('payment_method', array_key_first($enabledPaymentMethods) ?? 'bank_transfer'),
         'notes' => old('notes', ''),
         'items' => old('items', $items),
