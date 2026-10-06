@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* â”€â”€ Animations â”€â”€ */
-@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+@@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
 .fade-up { animation:fadeUp 0.4s ease forwards; opacity:0; }
 .fade-up.d1 { animation-delay:0.05s; }
 .fade-up.d2 { animation-delay:0.10s; }
@@ -88,7 +88,7 @@
 
 /* â”€â”€ Grid 2 col â”€â”€ */
 .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-@media (max-width:600px) { .grid-2 { grid-template-columns:1fr; } }
+@@media (max-width:600px) { .grid-2 { grid-template-columns:1fr; } }
 
 /* â”€â”€ Payment method row â”€â”€ */
 .pm-row {
@@ -162,7 +162,7 @@
 }
 
 /* â”€â”€ Responsive â”€â”€ */
-@media (max-width:768px) {
+@@media (max-width:768px) {
     .card-body { padding:16px; }
     .card-header { padding:14px 16px; }
     .pm-row { padding:12px 14px; }
