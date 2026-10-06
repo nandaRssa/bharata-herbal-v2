@@ -87,7 +87,7 @@
                                 <div class="qty-control" style="display:inline-flex;align-items:center;border:1px solid #D4DCD6;border-radius:10px;overflow:hidden;background:#FFFFFF;">
                                     <button type="button" @click="updateQty(item, item.quantity - 1)"
                                             class="qty-btn" style="width:36px;height:36px;border:none;background:#FFFFFF;color:#0D2618;font-weight:700;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s ease;">
-                                        âˆ’
+                                        <svg width="14" height="2" viewBox="0 0 14 2" fill="none"><rect width="14" height="2" rx="1" fill="currentColor"/></svg>
                                     </button>
                                     <span class="qty-display" style="width:44px;text-align:center;border:none;border-left:1px solid #E0E6E2;border-right:1px solid #E0E6E2;font-weight:600;font-size:0.95rem;color:#0D2618;background:#FAFAFA;height:36px;display:flex;align-items:center;justify-content:center;" x-text="item.quantity"></span>
                                     <button type="button" @click="updateQty(item, item.quantity + 1)"
